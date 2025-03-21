@@ -137,8 +137,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       toast.success('Login realizado com sucesso!');
       navigate('/home');
     } catch (error: any) {
-      toast.error(error.message || 'Erro ao fazer login');
       console.error('Error signing in:', error);
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -164,6 +164,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error: any) {
       toast.error(error.message || 'Erro ao criar conta');
       console.error('Error signing up:', error);
+      throw error;
     } finally {
       setLoading(false);
     }

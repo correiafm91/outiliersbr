@@ -16,7 +16,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
-  const { user, profile, signOut, isAdmin } = useAuth();
+  const { user, profile, signOut } = useAuth();
 
   useEffect(() => {
     // Add scroll event listener
@@ -77,15 +77,6 @@ const Navbar = () => {
               >
                 Meus Conteúdos
               </Link>
-              
-              {isAdmin && (
-                <Link 
-                  to="/admin" 
-                  className="text-sm uppercase tracking-wider text-virtus-gold hover:text-virtus-gold/80 transition-colors"
-                >
-                  Admin
-                </Link>
-              )}
               
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-2 text-sm uppercase tracking-wider hover:text-virtus-gold transition-colors outline-none">
@@ -220,15 +211,6 @@ const Navbar = () => {
               >
                 Criar Conteúdo
               </Link>
-              {isAdmin && (
-                <Link 
-                  to="/admin" 
-                  className="text-xl uppercase tracking-wide text-virtus-gold hover:text-virtus-gold/80 transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Admin
-                </Link>
-              )}
               <button 
                 onClick={() => {
                   signOut();

@@ -1,7 +1,7 @@
 
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -14,6 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from '@/context/AuthContext';
 import Navbar from '../components/Navbar';
 
@@ -23,8 +24,17 @@ const formSchema = z.object({
 });
 
 const Login = () => {
-  const { signIn, loading: authLoading } = useAuth();
+  const { signIn, loading: authLoading, user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  // If already logged in, redirect to home
+  useEffect(() => {
+    if (user) {
+      navigate('/home');
+    }
+  }, [user, navigate]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -36,8 +46,16 @@ const Login = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
-    await signIn(values.email, values.password);
-    setLoading(false);
+    setLoginError(null);
+    
+    try {
+      await signIn(values.email, values.password);
+      // Navigate is handled in the useEffect when user state changes
+    } catch (error: any) {
+      setLoginError(error.message || 'Erro ao fazer login. Verifique suas credenciais.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -50,6 +68,13 @@ const Login = () => {
             <h1 className="text-3xl font-bold text-virtus-offwhite mb-2">Bem-vindo de volta</h1>
             <p className="text-gray-400">Entre na sua conta para acessar a comunidade de Retórica de Marcas</p>
           </div>
+          
+          {loginError && (
+            <Alert variant="destructive" className="mb-6 bg-red-900/50 border-red-800">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{loginError}</AlertDescription>
+            </Alert>
+          )}
           
           <div className="glass-panel rounded-lg p-8">
             <Form {...form}>
@@ -121,8 +146,13 @@ const Login = () => {
             </Form>
           </div>
           
-          <div className="mt-8 text-center text-gray-500 text-sm">
-            <p>O acesso administrativo é reservado para a equipe VIRTUS.</p>
+          <div className="mt-8 text-center text-sm">
+            <p className="text-gray-500">
+              Acesse o{' '}
+              <Link to="/admin" className="text-virtus-gold hover:underline">
+                Painel Administrativo
+              </Link>
+            </p>
           </div>
         </div>
       </div>
