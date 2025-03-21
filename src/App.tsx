@@ -10,7 +10,6 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import CreateProfile from "./pages/CreateProfile";
 import Home from "./pages/Home";
-import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
 import EditProfile from "./pages/EditProfile";
 import Settings from "./pages/Settings";
@@ -19,19 +18,6 @@ import CreateContent from "./pages/CreateContent";
 import { useAuth } from "./context/AuthContext";
 
 const queryClient = new QueryClient();
-
-// Protected route component
-const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, isAdmin, loading } = useAuth();
-  
-  if (loading) return <div>Carregando...</div>;
-  
-  if (!user || !isAdmin) {
-    return <Navigate to="/login" />;
-  }
-  
-  return <>{children}</>;
-};
 
 // Regular protected route
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -87,12 +73,6 @@ const AppRoutes = () => {
         <ProtectedRoute>
           <CreateContent />
         </ProtectedRoute>
-      } />
-      
-      <Route path="/admin" element={
-        <ProtectedAdminRoute>
-          <AdminPanel />
-        </ProtectedAdminRoute>
       } />
       
       <Route path="*" element={<NotFound />} />
