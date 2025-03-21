@@ -1,19 +1,24 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, User, LogOut } from 'lucide-react';
+import { Menu, X, User, LogOut, Settings, FileText, Plus } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
+  const { user, profile, signOut, isAdmin } = useAuth();
 
   useEffect(() => {
-    // Check if user is logged in (we'll implement actual auth later)
-    const user = localStorage.getItem('virtus-user');
-    setIsLoggedIn(!!user);
-
     // Add scroll event listener
     const handleScroll = () => {
       if (window.scrollY > 10) {
@@ -26,13 +31,6 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('virtus-user');
-    localStorage.removeItem('virtus-token');
-    setIsLoggedIn(false);
-    window.location.href = '/';
-  };
 
   return (
     <nav 
@@ -61,7 +59,7 @@ const Navbar = () => {
             Início
           </Link>
           
-          {isLoggedIn ? (
+          {user && profile ? (
             <>
               <Link 
                 to="/home" 
@@ -71,26 +69,71 @@ const Navbar = () => {
               >
                 Comunidade
               </Link>
-              <div className="relative group">
-                <button className="flex items-center gap-2 text-sm uppercase tracking-wider hover:text-virtus-gold transition-colors">
+              <Link 
+                to="/content" 
+                className={`text-sm uppercase tracking-wider hover:text-virtus-gold transition-colors ${
+                  location.pathname === '/content' ? 'text-virtus-gold' : 'text-virtus-offwhite'
+                }`}
+              >
+                Meus Conteúdos
+              </Link>
+              
+              {isAdmin && (
+                <Link 
+                  to="/admin" 
+                  className="text-sm uppercase tracking-wider text-virtus-gold hover:text-virtus-gold/80 transition-colors"
+                >
+                  Admin
+                </Link>
+              )}
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center gap-2 text-sm uppercase tracking-wider hover:text-virtus-gold transition-colors outline-none">
                   <User size={16} />
                   Perfil
-                </button>
-                <div className="absolute right-0 mt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-1">
-                  <div className="glass-panel rounded-md shadow-lg overflow-hidden">
-                    <Link to="/profile" className="block px-4 py-3 text-sm hover:bg-virtus-gold/10 transition-colors">
-                      Meu Perfil
-                    </Link>
-                    <button 
-                      onClick={handleLogout}
-                      className="w-full text-left px-4 py-3 text-sm hover:bg-virtus-gold/10 transition-colors flex items-center gap-2"
-                    >
-                      <LogOut size={16} />
-                      Sair
-                    </button>
-                  </div>
-                </div>
-              </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-virtus-darkgray border border-gray-700 text-virtus-offwhite">
+                  <DropdownMenuLabel>
+                    <div className="flex items-center gap-2">
+                      {profile.photo_url ? (
+                        <img 
+                          src={profile.photo_url} 
+                          alt={profile.owner_name} 
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-virtus-gold/20 flex items-center justify-center">
+                          <span className="text-virtus-gold font-medium">
+                            {profile.owner_name.charAt(0)}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex flex-col">
+                        <span className="font-medium">{profile.owner_name}</span>
+                        <span className="text-xs text-gray-400">{profile.business_name}</span>
+                      </div>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-gray-700" />
+                  <DropdownMenuItem className="hover:bg-virtus-gold/10 cursor-pointer" onClick={() => window.location.href = '/edit-profile'}>
+                    <User size={16} className="mr-2" />
+                    Editar Perfil
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-virtus-gold/10 cursor-pointer" onClick={() => window.location.href = '/settings'}>
+                    <Settings size={16} className="mr-2" />
+                    Configurações
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-virtus-gold/10 cursor-pointer" onClick={() => window.location.href = '/create-content'}>
+                    <Plus size={16} className="mr-2" />
+                    Criar Conteúdo
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-gray-700" />
+                  <DropdownMenuItem className="hover:bg-virtus-gold/10 cursor-pointer" onClick={signOut}>
+                    <LogOut size={16} className="mr-2" />
+                    Sair
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           ) : (
             <>
@@ -140,7 +183,7 @@ const Navbar = () => {
             Início
           </Link>
           
-          {isLoggedIn ? (
+          {user && profile ? (
             <>
               <Link 
                 to="/home" 
@@ -150,15 +193,45 @@ const Navbar = () => {
                 Comunidade
               </Link>
               <Link 
-                to="/profile" 
+                to="/content" 
                 className="text-xl uppercase tracking-wide hover:text-virtus-gold transition-colors"
                 onClick={() => setIsOpen(false)}
               >
-                Meu Perfil
+                Meus Conteúdos
               </Link>
+              <Link 
+                to="/edit-profile" 
+                className="text-xl uppercase tracking-wide hover:text-virtus-gold transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                Editar Perfil
+              </Link>
+              <Link 
+                to="/settings" 
+                className="text-xl uppercase tracking-wide hover:text-virtus-gold transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                Configurações
+              </Link>
+              <Link 
+                to="/create-content" 
+                className="text-xl uppercase tracking-wide hover:text-virtus-gold transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                Criar Conteúdo
+              </Link>
+              {isAdmin && (
+                <Link 
+                  to="/admin" 
+                  className="text-xl uppercase tracking-wide text-virtus-gold hover:text-virtus-gold/80 transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Admin
+                </Link>
+              )}
               <button 
                 onClick={() => {
-                  handleLogout();
+                  signOut();
                   setIsOpen(false);
                 }}
                 className="text-xl uppercase tracking-wide hover:text-virtus-gold transition-colors"

@@ -26,9 +26,9 @@ const formSchema = z.object({
   bio: z.string().optional(),
 });
 
-const CreateProfile = () => {
+const EditProfile = () => {
   const navigate = useNavigate();
-  const { user, refreshProfile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -50,11 +50,25 @@ const CreateProfile = () => {
       return;
     }
     
-    // Pre-fill form with user data if available
-    if (user.email) {
-      form.setValue('email', user.email);
+    // Check if profile exists
+    if (!profile) {
+      navigate('/create-profile');
+      return;
     }
-  }, [user, navigate, form]);
+    
+    // Pre-fill form with profile data
+    form.reset({
+      businessName: profile.business_name,
+      ownerName: profile.owner_name,
+      email: profile.email,
+      bio: profile.bio || '',
+    });
+    
+    // Load photo if exists
+    if (profile.photo_url) {
+      setPhotoPreview(profile.photo_url);
+    }
+  }, [user, profile, navigate, form]);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -90,9 +104,9 @@ const CreateProfile = () => {
     setLoading(true);
     
     try {
-      let photoUrl = null;
+      let photoUrl = profile?.photo_url;
       
-      // Upload photo if selected
+      // Upload new photo if changed
       if (photoFile) {
         const fileName = `profile-${user.id}-${Date.now()}`;
         const { data: uploadData, error: uploadError } = await supabase.storage
@@ -108,30 +122,34 @@ const CreateProfile = () => {
           
           photoUrl = urlData.publicUrl;
         }
+      } else if (photoPreview === null && profile?.photo_url) {
+        // If user removed photo
+        photoUrl = null;
       }
       
-      // Create profile
+      // Update profile
       const { error } = await supabase
         .from('profiles')
-        .insert({
-          id: user.id,
+        .update({
           business_name: values.businessName,
           owner_name: values.ownerName,
           email: values.email,
           bio: values.bio || null,
           photo_url: photoUrl,
-        });
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id);
       
       if (error) throw error;
       
       // Refresh profile data in context
       await refreshProfile();
       
-      toast.success('Perfil criado com sucesso!');
+      toast.success('Perfil atualizado com sucesso!');
       navigate('/home');
     } catch (error: any) {
-      console.error('Error creating profile:', error);
-      toast.error(error.message || 'Erro ao criar perfil');
+      console.error('Error updating profile:', error);
+      toast.error(error.message || 'Erro ao atualizar perfil');
     } finally {
       setLoading(false);
     }
@@ -144,13 +162,61 @@ const CreateProfile = () => {
       <div className="flex-1 flex items-center justify-center px-4 py-20">
         <div className="w-full max-w-2xl">
           <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold text-virtus-offwhite mb-2">Complete seu perfil</h1>
-            <p className="text-gray-400">Configure seu perfil para começar sua jornada em Retórica de Marcas na VIRTUS Community</p>
+            <h1 className="text-3xl font-bold text-virtus-offwhite mb-2">Editar Perfil</h1>
+            <p className="text-gray-400">Atualize as informações do seu perfil na VIRTUS Community</p>
           </div>
           
           <div className="glass-panel rounded-lg p-8">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="space-y-4">
+                  <FormLabel className="block text-sm font-medium text-virtus-offwhite">
+                    Foto de perfil
+                  </FormLabel>
+                  <div className="flex flex-col items-center">
+                    <div className="relative mb-4">
+                      {photoPreview ? (
+                        <div className="relative">
+                          <img
+                            src={photoPreview}
+                            alt="Preview"
+                            className="w-32 h-32 rounded-full object-cover border-2 border-virtus-gold"
+                          />
+                          <button
+                            type="button"
+                            onClick={removePhoto}
+                            className="absolute -top-2 -right-2 bg-virtus-darkgray rounded-full p-1 text-red-500 hover:text-red-600"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-32 h-32 rounded-full bg-virtus-darkgray border-2 border-dashed border-gray-500 flex items-center justify-center">
+                          <Upload size={32} className="text-gray-400" />
+                        </div>
+                      )}
+                    </div>
+                    
+                    <label 
+                      htmlFor="photo-upload" 
+                      className="px-4 py-2 rounded-md border border-virtus-gold/50 text-virtus-gold bg-transparent hover:bg-virtus-gold/10 transition-colors text-sm font-medium cursor-pointer flex items-center"
+                    >
+                      <Upload size={16} className="mr-2" />
+                      {photoPreview ? 'Alterar foto' : 'Escolher foto'}
+                    </label>
+                    <input 
+                      id="photo-upload" 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handlePhotoUpload} 
+                      className="hidden" 
+                    />
+                    <p className="text-xs text-gray-400 mt-2">
+                      A foto deve ter no máximo 5MB (Opcional)
+                    </p>
+                  </div>
+                </div>
+
                 <FormField
                   control={form.control}
                   name="businessName"
@@ -212,54 +278,6 @@ const CreateProfile = () => {
                   )}
                 />
 
-                <div className="space-y-4">
-                  <FormLabel className="block text-sm font-medium text-virtus-offwhite">
-                    Foto de perfil
-                  </FormLabel>
-                  <div className="flex flex-col items-center">
-                    <div className="relative mb-4">
-                      {photoPreview ? (
-                        <div className="relative">
-                          <img
-                            src={photoPreview}
-                            alt="Preview"
-                            className="w-32 h-32 rounded-full object-cover border-2 border-virtus-gold"
-                          />
-                          <button
-                            type="button"
-                            onClick={removePhoto}
-                            className="absolute -top-2 -right-2 bg-virtus-darkgray rounded-full p-1 text-red-500 hover:text-red-600"
-                          >
-                            <X size={16} />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="w-32 h-32 rounded-full bg-virtus-darkgray border-2 border-dashed border-gray-500 flex items-center justify-center">
-                          <Upload size={32} className="text-gray-400" />
-                        </div>
-                      )}
-                    </div>
-                    
-                    <label 
-                      htmlFor="photo-upload" 
-                      className="px-4 py-2 rounded-md border border-virtus-gold/50 text-virtus-gold bg-transparent hover:bg-virtus-gold/10 transition-colors text-sm font-medium cursor-pointer flex items-center"
-                    >
-                      <Upload size={16} className="mr-2" />
-                      {photoPreview ? 'Alterar foto' : 'Escolher foto'}
-                    </label>
-                    <input 
-                      id="photo-upload" 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handlePhotoUpload} 
-                      className="hidden" 
-                    />
-                    <p className="text-xs text-gray-400 mt-2">
-                      A foto deve ter no máximo 5MB (Opcional)
-                    </p>
-                  </div>
-                </div>
-
                 <FormField
                   control={form.control}
                   name="bio"
@@ -281,7 +299,14 @@ const CreateProfile = () => {
                   )}
                 />
 
-                <div className="pt-4 flex justify-end">
+                <div className="pt-4 flex justify-between">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/home')}
+                    className="px-6 py-3 rounded-md border border-virtus-gold/50 text-virtus-gold bg-transparent hover:bg-virtus-gold/10 transition-colors text-base font-medium"
+                  >
+                    Cancelar
+                  </button>
                   <button
                     type="submit"
                     disabled={loading}
@@ -290,11 +315,11 @@ const CreateProfile = () => {
                     {loading ? (
                       <>
                         <Loader2 size={18} className="animate-spin mr-2" />
-                        Processando...
+                        Salvando...
                       </>
                     ) : (
                       <>
-                        Concluir
+                        Salvar Alterações
                         <ArrowRight size={18} className="ml-2" />
                       </>
                     )}
@@ -309,4 +334,4 @@ const CreateProfile = () => {
   );
 };
 
-export default CreateProfile;
+export default EditProfile;

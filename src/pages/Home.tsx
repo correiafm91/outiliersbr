@@ -3,104 +3,66 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MessageSquare, ThumbsUp, Share2, Bookmark, Play, Users, Loader2 } from 'lucide-react';
 import { toast } from "sonner";
-import Navbar from '../components/Navbar';
-import CommentSection from '../components/CommentSection';
-
-// Mock content data (will be replaced with API calls in a real application)
-const MOCK_CONTENT = [
-  {
-    id: '1',
-    title: 'Como escalar seu negócio em 2023',
-    type: 'article',
-    content: 'Neste artigo, exploramos as estratégias mais eficazes para escalar seu negócio no cenário atual. Descubra como alavancaria seus resultados com técnicas testadas por especialistas.',
-    author: {
-      name: 'Ricardo Silva',
-      avatar: 'https://randomuser.me/api/portraits/men/32.jpg'
-    },
-    createdAt: '2023-06-15T14:30:00Z',
-    likes: 42,
-    comments: [
-      {
-        id: 'c1',
-        user: {
-          name: 'Ana Beatriz',
-          avatar: 'https://randomuser.me/api/portraits/women/12.jpg'
-        },
-        content: 'Excelente conteúdo! Apliquei algumas dessas técnicas e já estou vendo resultados.',
-        createdAt: '2023-06-16T10:15:00Z',
-        likes: 5
-      }
-    ]
-  },
-  {
-    id: '2',
-    title: 'Gestão de Equipes Remotas',
-    type: 'video',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=800',
-    videoUrl: '#',
-    duration: '32:45',
-    author: {
-      name: 'Mariana Costa',
-      avatar: 'https://randomuser.me/api/portraits/women/65.jpg'
-    },
-    createdAt: '2023-06-10T09:45:00Z',
-    likes: 126,
-    comments: []
-  },
-  {
-    id: '3',
-    title: 'Live: Finanças para Empreendedores',
-    type: 'live',
-    scheduledFor: '2023-06-30T19:00:00Z',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=800',
-    author: {
-      name: 'Paulo Menezes',
-      avatar: 'https://randomuser.me/api/portraits/men/45.jpg'
-    },
-    createdAt: '2023-06-05T11:20:00Z',
-    participants: 230,
-    comments: []
-  }
-];
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  }).format(date);
-};
+import { supabase, formatLocalDate, formatLocalDateTime } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
+import Navbar from '@/components/Navbar';
+import CommentSection from '@/components/CommentSection';
 
 const Home = () => {
   const navigate = useNavigate();
-  const [content, setContent] = useState(MOCK_CONTENT);
-  const [profile, setProfile] = useState<any>(null);
+  const { user, profile } = useAuth();
+  const [content, setContent] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showComments, setShowComments] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if user is logged in
-    const token = localStorage.getItem('virtus-token');
-    if (!token) {
+    if (!user) {
       navigate('/login');
       return;
     }
     
     // Check if profile exists
-    const profileData = localStorage.getItem('virtus-user-profile');
-    if (!profileData) {
+    if (!profile) {
       navigate('/create-profile');
       return;
     }
     
-    setProfile(JSON.parse(profileData));
+    // Load content from Supabase
+    const loadContent = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('content')
+          .select(`
+            *,
+            profiles:author_id(owner_name, photo_url),
+            comments:comments(
+              id,
+              content,
+              created_at,
+              user_id,
+              profiles:user_id(owner_name, photo_url),
+              likes
+            )
+          `)
+          .eq('published', true)
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        if (data) {
+          setContent(data);
+        }
+      } catch (error) {
+        console.error('Error loading content:', error);
+        toast.error('Erro ao carregar conteúdos');
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    // Simulate loading content
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }, [navigate]);
+    loadContent();
+  }, [user, profile, navigate]);
 
   const toggleComments = (contentId: string) => {
     if (showComments === contentId) {
@@ -110,21 +72,123 @@ const Home = () => {
     }
   };
 
-  const handleLike = (contentId: string) => {
-    setContent(prev => 
-      prev.map(item => 
-        item.id === contentId ? { ...item, likes: item.likes + 1 } : item
-      )
-    );
-    toast.success("Conteúdo curtido!");
+  const handleLike = async (contentId: string) => {
+    if (!user) return;
+    
+    try {
+      // Check if user already liked this content
+      const { data: existingLike } = await supabase
+        .from('likes')
+        .select('id')
+        .eq('content_id', contentId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (existingLike) {
+        // Unlike if already liked
+        await supabase
+          .from('likes')
+          .delete()
+          .eq('id', existingLike.id);
+        
+        toast.success('Like removido!');
+      } else {
+        // Add like
+        await supabase
+          .from('likes')
+          .insert({
+            content_id: contentId,
+            user_id: user.id,
+          });
+        
+        toast.success('Conteúdo curtido!');
+      }
+      
+      // Refresh content
+      const { data: updatedContent } = await supabase
+        .from('content')
+        .select(`
+          *,
+          profiles:author_id(owner_name, photo_url),
+          comments:comments(
+            id,
+            content,
+            created_at,
+            user_id,
+            profiles:user_id(owner_name, photo_url),
+            likes
+          )
+        `)
+        .eq('published', true)
+        .order('created_at', { ascending: false });
+      
+      if (updatedContent) {
+        setContent(updatedContent);
+      }
+    } catch (error) {
+      console.error('Error handling like:', error);
+      toast.error('Erro ao processar ação');
+    }
   };
 
   const handleBookmark = () => {
     toast.success("Conteúdo salvo para ver mais tarde!");
   };
 
-  const handleShare = () => {
-    toast.success("Link copiado para a área de transferência!");
+  const handleShare = (title: string) => {
+    // Generate a shareable link
+    const shareUrl = `${window.location.origin}/content/${title.toLowerCase().replace(/\s+/g, '-')}`;
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      toast.success("Link copiado para a área de transferência!");
+    }).catch(err => {
+      console.error('Failed to copy: ', err);
+      toast.error("Erro ao copiar link");
+    });
+  };
+
+  const handleAddComment = async (contentId: string, commentText: string) => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('comments')
+        .insert({
+          content_id: contentId,
+          user_id: user.id,
+          content: commentText,
+        });
+      
+      if (error) throw error;
+      
+      toast.success('Comentário adicionado com sucesso!');
+      
+      // Refresh content
+      const { data: updatedContent } = await supabase
+        .from('content')
+        .select(`
+          *,
+          profiles:author_id(owner_name, photo_url),
+          comments:comments(
+            id,
+            content,
+            created_at,
+            user_id,
+            profiles:user_id(owner_name, photo_url),
+            likes
+          )
+        `)
+        .eq('published', true)
+        .order('created_at', { ascending: false });
+      
+      if (updatedContent) {
+        setContent(updatedContent);
+      }
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      toast.error('Erro ao adicionar comentário');
+    }
   };
 
   if (loading) {
@@ -149,138 +213,126 @@ const Home = () => {
             <div className="lg:w-2/3 space-y-8">
               <div className="glass-panel p-6 rounded-xl animate-fade-in">
                 <h1 className="text-2xl md:text-3xl font-bold text-virtus-offwhite mb-2">
-                  Bem-vindo, <span className="text-virtus-gold">{profile?.ownerName.split(' ')[0]}</span>
+                  Bem-vindo à <span className="text-virtus-gold">Retórica de Marcas</span>
                 </h1>
                 <p className="text-gray-300">
-                  Confira os conteúdos exclusivos da nossa comunidade
+                  Explore a arte de criar marcas memoráveis com a VIRTUS. Nossa comunidade exclusiva traz conteúdos especializados em Retórica de Marcas, um serviço único desenvolvido para transformar sua identidade de negócio.
                 </p>
               </div>
               
-              {content.map((item) => (
-                <div key={item.id} className="glass-panel rounded-xl overflow-hidden animate-fade-up card-hover">
-                  <div className="p-6">
-                    <div className="flex items-center mb-4">
-                      <img
-                        src={item.author.avatar}
-                        alt={item.author.name}
-                        className="w-10 h-10 rounded-full mr-3"
-                      />
-                      <div>
-                        <h3 className="font-medium text-virtus-offwhite">{item.author.name}</h3>
-                        <p className="text-sm text-gray-400">{formatDate(item.createdAt)}</p>
+              {content.length > 0 ? (
+                content.map((item) => (
+                  <div key={item.id} className="glass-panel rounded-xl overflow-hidden animate-fade-up card-hover">
+                    <div className="p-6">
+                      <div className="flex items-center mb-4">
+                        {item.profiles?.photo_url ? (
+                          <img
+                            src={item.profiles.photo_url}
+                            alt={item.profiles.owner_name}
+                            className="w-10 h-10 rounded-full mr-3 object-cover"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-virtus-gold/20 flex items-center justify-center mr-3">
+                            <span className="text-virtus-gold font-medium">
+                              {item.profiles?.owner_name.charAt(0) || 'V'}
+                            </span>
+                          </div>
+                        )}
+                        <div>
+                          <h3 className="font-medium text-virtus-offwhite">{item.profiles?.owner_name || 'VIRTUS'}</h3>
+                          <p className="text-sm text-gray-400">{formatLocalDate(item.created_at)}</p>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <h2 className="text-xl font-bold text-virtus-gold mb-3">{item.title}</h2>
-                    
-                    {item.type === 'article' && (
-                      <p className="text-gray-300 mb-4">{item.content}</p>
-                    )}
-                    
-                    {(item.type === 'video' || item.type === 'live') && (
-                      <div className="relative mb-4 rounded-lg overflow-hidden">
-                        <img
-                          src={item.thumbnailUrl}
-                          alt={item.title}
-                          className="w-full h-56 object-cover"
-                        />
-                        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                          <button className="w-16 h-16 rounded-full bg-virtus-gold/80 hover:bg-virtus-gold transition-colors flex items-center justify-center">
-                            <Play size={32} className="text-virtus-black ml-1" />
+                      
+                      <h2 className="text-xl font-bold text-virtus-gold mb-3">{item.title}</h2>
+                      
+                      {item.type === 'article' && item.content && (
+                        <p className="text-gray-300 mb-4">{item.content}</p>
+                      )}
+                      
+                      {(item.type === 'video' || item.type === 'live') && item.thumbnail_url && (
+                        <div className="relative mb-4 rounded-lg overflow-hidden">
+                          <img
+                            src={item.thumbnail_url}
+                            alt={item.title}
+                            className="w-full h-56 object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                            <button className="w-16 h-16 rounded-full bg-virtus-gold/80 hover:bg-virtus-gold transition-colors flex items-center justify-center">
+                              <Play size={32} className="text-virtus-black ml-1" />
+                            </button>
+                          </div>
+                          
+                          {item.type === 'live' && (
+                            <div className="absolute top-3 left-3 bg-red-600 px-3 py-1 rounded-full text-sm text-white flex items-center">
+                              <span className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></span>
+                              AO VIVO
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      {item.type === 'live' && item.scheduled_for && (
+                        <div className="flex items-center text-gray-300 mb-4">
+                          <Users size={16} className="mr-2" />
+                          <span>Agendado para {formatLocalDateTime(item.scheduled_for)}</span>
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-between pt-4 border-t border-gray-700">
+                        <div className="flex items-center space-x-4">
+                          <button 
+                            onClick={() => handleLike(item.id)}
+                            className="flex items-center text-gray-400 hover:text-virtus-gold transition-colors"
+                          >
+                            <ThumbsUp size={18} className="mr-1" />
+                            <span>Curtir</span>
+                          </button>
+                          
+                          <button 
+                            onClick={() => toggleComments(item.id)}
+                            className="flex items-center text-gray-400 hover:text-virtus-gold transition-colors"
+                          >
+                            <MessageSquare size={18} className="mr-1" />
+                            <span>{item.comments?.length || 0}</span>
                           </button>
                         </div>
                         
-                        {item.type === 'video' && (
-                          <div className="absolute bottom-3 right-3 bg-black bg-opacity-70 px-2 py-1 rounded text-sm text-white">
-                            {item.duration}
-                          </div>
-                        )}
-                        
-                        {item.type === 'live' && (
-                          <div className="absolute top-3 left-3 bg-red-600 px-3 py-1 rounded-full text-sm text-white flex items-center">
-                            <span className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></span>
-                            AO VIVO
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    
-                    {item.type === 'live' && (
-                      <div className="flex items-center text-gray-300 mb-4">
-                        <Users size={16} className="mr-2" />
-                        <span>{item.participants} participantes</span>
-                        <span className="mx-2">•</span>
-                        <span>Agendado para {new Date(item.scheduledFor).toLocaleString('pt-BR')}</span>
-                      </div>
-                    )}
-                    
-                    <div className="flex justify-between pt-4 border-t border-gray-700">
-                      <div className="flex items-center space-x-4">
-                        <button 
-                          onClick={() => handleLike(item.id)}
-                          className="flex items-center text-gray-400 hover:text-virtus-gold transition-colors"
-                        >
-                          <ThumbsUp size={18} className="mr-1" />
-                          <span>{item.likes}</span>
-                        </button>
-                        
-                        <button 
-                          onClick={() => toggleComments(item.id)}
-                          className="flex items-center text-gray-400 hover:text-virtus-gold transition-colors"
-                        >
-                          <MessageSquare size={18} className="mr-1" />
-                          <span>{item.comments.length}</span>
-                        </button>
+                        <div className="flex items-center space-x-4">
+                          <button 
+                            onClick={handleBookmark}
+                            className="text-gray-400 hover:text-virtus-gold transition-colors"
+                          >
+                            <Bookmark size={18} />
+                          </button>
+                          
+                          <button 
+                            onClick={() => handleShare(item.title)}
+                            className="text-gray-400 hover:text-virtus-gold transition-colors"
+                          >
+                            <Share2 size={18} />
+                          </button>
+                        </div>
                       </div>
                       
-                      <div className="flex items-center space-x-4">
-                        <button 
-                          onClick={handleBookmark}
-                          className="text-gray-400 hover:text-virtus-gold transition-colors"
-                        >
-                          <Bookmark size={18} />
-                        </button>
-                        
-                        <button 
-                          onClick={handleShare}
-                          className="text-gray-400 hover:text-virtus-gold transition-colors"
-                        >
-                          <Share2 size={18} />
-                        </button>
-                      </div>
+                      {showComments === item.id && (
+                        <CommentSection 
+                          contentId={item.id} 
+                          comments={item.comments || []}
+                          onAddComment={(comment) => handleAddComment(item.id, comment)}
+                        />
+                      )}
                     </div>
-                    
-                    {showComments === item.id && (
-                      <CommentSection 
-                        contentId={item.id} 
-                        comments={item.comments}
-                        onAddComment={(comment) => {
-                          // In a real app, we would call an API to add the comment
-                          toast.success("Comentário adicionado com sucesso!");
-                          const newComment = {
-                            id: `c${Date.now()}`,
-                            user: {
-                              name: profile.ownerName,
-                              avatar: profile.photoUrl || 'https://randomuser.me/api/portraits/lego/1.jpg'
-                            },
-                            content: comment,
-                            createdAt: new Date().toISOString(),
-                            likes: 0
-                          };
-                          
-                          setContent(prev => 
-                            prev.map(c => 
-                              c.id === item.id 
-                                ? { ...c, comments: [...c.comments, newComment] } 
-                                : c
-                            )
-                          );
-                        }}
-                      />
-                    )}
                   </div>
+                ))
+              ) : (
+                <div className="glass-panel rounded-xl p-8 text-center">
+                  <h2 className="text-xl font-bold text-virtus-gold mb-4">Sem conteúdos disponíveis</h2>
+                  <p className="text-gray-300 mb-4">
+                    Não há conteúdos publicados no momento. Volte em breve para novidades sobre Retórica de Marcas.
+                  </p>
                 </div>
-              ))}
+              )}
             </div>
             
             {/* Sidebar */}
@@ -289,23 +341,23 @@ const Home = () => {
               <div className="glass-panel rounded-xl p-6 animate-fade-in">
                 <div className="flex items-center">
                   <div className="mr-4">
-                    {profile.photoUrl ? (
+                    {profile.photo_url ? (
                       <img 
-                        src={profile.photoUrl} 
-                        alt={profile.ownerName}
+                        src={profile.photo_url} 
+                        alt={profile.owner_name}
                         className="w-16 h-16 rounded-full object-cover border-2 border-virtus-gold"
                       />
                     ) : (
                       <div className="w-16 h-16 rounded-full bg-virtus-darkgray flex items-center justify-center border-2 border-virtus-gold">
                         <span className="text-xl font-bold text-virtus-gold">
-                          {profile.ownerName.charAt(0)}
+                          {profile.owner_name.charAt(0)}
                         </span>
                       </div>
                     )}
                   </div>
                   <div>
-                    <h3 className="font-bold text-virtus-offwhite">{profile.ownerName}</h3>
-                    <p className="text-sm text-gray-400">{profile.businessName}</p>
+                    <h3 className="font-bold text-virtus-offwhite">{profile.owner_name}</h3>
+                    <p className="text-sm text-gray-400">{profile.business_name}</p>
                   </div>
                 </div>
                 
@@ -314,59 +366,27 @@ const Home = () => {
                     {profile.bio}
                   </p>
                 )}
+                
+                <div className="mt-4 pt-4 border-t border-gray-700">
+                  <Link 
+                    to="/create-content" 
+                    className="w-full px-4 py-2 rounded-md border border-virtus-gold/50 text-virtus-gold hover:bg-virtus-gold/10 transition-colors text-sm flex items-center justify-center"
+                  >
+                    <PlusCircle size={16} className="mr-2" />
+                    Criar Conteúdo
+                  </Link>
+                </div>
               </div>
               
-              {/* Upcoming events */}
+              {/* About Retórica de Marcas */}
               <div className="glass-panel rounded-xl p-6 animate-fade-in">
-                <h3 className="text-lg font-bold text-virtus-offwhite mb-4">Próximas Lives</h3>
-                
-                <div className="space-y-4">
-                  {[
-                    {
-                      id: 'live1',
-                      title: 'Marketing Digital para Pequenos Negócios',
-                      date: '28/06/2023 - 19:00',
-                      host: 'Juliana Torres'
-                    },
-                    {
-                      id: 'live2',
-                      title: 'Gestão Financeira na Prática',
-                      date: '05/07/2023 - 20:00',
-                      host: 'Ricardo Almeida'
-                    }
-                  ].map(event => (
-                    <div key={event.id} className="border border-gray-700 rounded-lg p-3 hover:border-virtus-gold/50 transition-colors">
-                      <h4 className="font-medium text-virtus-gold">{event.title}</h4>
-                      <p className="text-sm text-gray-400 mt-1">{event.date}</p>
-                      <p className="text-xs text-gray-500 mt-1">por {event.host}</p>
-                    </div>
-                  ))}
-                </div>
-                
-                <button className="w-full mt-4 px-4 py-2 rounded-md border border-virtus-gold/50 text-virtus-gold hover:bg-virtus-gold/10 transition-colors text-sm">
-                  Ver todos
-                </button>
-              </div>
-              
-              {/* Community members */}
-              <div className="glass-panel rounded-xl p-6 animate-fade-in">
-                <h3 className="text-lg font-bold text-virtus-offwhite mb-4">Membros da Comunidade</h3>
-                
-                <div className="flex flex-wrap">
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <div key={i} className="w-1/4 p-1">
-                      <img 
-                        src={`https://randomuser.me/api/portraits/${i % 2 === 0 ? 'women' : 'men'}/${10 + i}.jpg`}
-                        alt="Community member"
-                        className="w-full aspect-square rounded-full object-cover"
-                      />
-                    </div>
-                  ))}
-                </div>
-                
-                <button className="w-full mt-4 px-4 py-2 rounded-md border border-virtus-gold/50 text-virtus-gold hover:bg-virtus-gold/10 transition-colors text-sm">
-                  Ver todos os membros
-                </button>
+                <h3 className="text-lg font-bold text-virtus-offwhite mb-4">Sobre Retórica de Marcas</h3>
+                <p className="text-gray-300 text-sm mb-4">
+                  A Retórica de Marcas é um serviço exclusivo da VIRTUS que combina estratégia, psicologia e design para criar marcas com personalidade única e comunicação poderosa.
+                </p>
+                <p className="text-gray-300 text-sm">
+                  Nossa metodologia exclusiva transforma negócios através de uma identidade autêntica e memorável, conectando-se profundamente com seu público-alvo.
+                </p>
               </div>
             </div>
           </div>

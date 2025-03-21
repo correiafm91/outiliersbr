@@ -1,157 +1,128 @@
 
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, ArrowLeft, LogIn, Loader2 } from 'lucide-react';
-import { toast } from "sonner";
+import { Link } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useAuth } from '@/context/AuthContext';
 import Navbar from '../components/Navbar';
 
+const formSchema = z.object({
+  email: z.string().email('Email inválido'),
+  password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres'),
+});
+
 const Login = () => {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-  const [showPassword, setShowPassword] = useState(false);
+  const { signIn, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
-
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Check if user exists (in a real app, this would be an API call)
-      const user = localStorage.getItem('virtus-user');
-      
-      if (user) {
-        // In a real app, we would validate credentials server-side
-        localStorage.setItem('virtus-token', 'mock-jwt-token');
-        
-        toast.success("Login realizado com sucesso!");
-        
-        // Check if user has completed profile
-        const profile = localStorage.getItem('virtus-user-profile');
-        
-        if (profile) {
-          navigate('/home');
-        } else {
-          navigate('/create-profile');
-        }
-      } else {
-        toast.error("E-mail ou senha incorretos");
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.error("Erro ao fazer login. Por favor, tente novamente.");
-    } finally {
-      setLoading(false);
-    }
+    await signIn(values.email, values.password);
+    setLoading(false);
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-virtus-black">
       <Navbar />
       
-      <div className="flex-1 flex items-center justify-center px-4 py-20">
+      <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <div className="mb-8">
-            <Link to="/" className="inline-flex items-center text-virtus-gold hover:underline mb-6">
-              <ArrowLeft size={16} className="mr-2" />
-              Voltar ao início
-            </Link>
+          <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-virtus-offwhite mb-2">Bem-vindo de volta</h1>
-            <p className="text-gray-400">Faça login para acessar a comunidade VIRTUS</p>
+            <p className="text-gray-400">Entre na sua conta para acessar a comunidade de Retórica de Marcas</p>
           </div>
           
           <div className="glass-panel rounded-lg p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <label htmlFor="email" className="block text-sm font-medium text-virtus-offwhite">
-                  E-mail
-                </label>
-                <input
-                  id="email"
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
                   name="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-md input-dark transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-virtus-gold/50"
-                  placeholder="seu@email.com"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-virtus-offwhite">Email</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="seu@email.com" 
+                          className="input-dark transition-all duration-300 focus:ring-2 focus:ring-virtus-gold/50" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
+                
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex justify-between items-center">
+                        <FormLabel className="text-virtus-offwhite">Senha</FormLabel>
+                        <Link to="/forgot-password" className="text-xs text-virtus-gold hover:underline">
+                          Esqueceu a senha?
+                        </Link>
+                      </div>
+                      <FormControl>
+                        <Input 
+                          placeholder="••••••••" 
+                          type="password"
+                          className="input-dark transition-all duration-300 focus:ring-2 focus:ring-virtus-gold/50" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <button
+                  type="submit"
+                  disabled={loading || authLoading}
+                  className="w-full py-3 rounded-md btn-gold font-medium flex items-center justify-center"
+                >
+                  {loading || authLoading ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin mr-2" />
+                      Entrando...
+                    </>
+                  ) : 'Entrar'}
+                </button>
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label htmlFor="password" className="block text-sm font-medium text-virtus-offwhite">
-                    Senha
-                  </label>
-                  <a href="#" className="text-sm text-virtus-gold hover:underline">
-                    Esqueceu a senha?
-                  </a>
+                <div className="text-center pt-4">
+                  <p className="text-gray-400 text-sm">
+                    Ainda não tem uma conta?{' '}
+                    <Link to="/register" className="text-virtus-gold hover:underline">
+                      Cadastre-se
+                    </Link>
+                  </p>
                 </div>
-                <div className="relative">
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-md input-dark transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-virtus-gold/50"
-                    placeholder="Digite sua senha"
-                  />
-                  <button 
-                    type="button"
-                    onClick={togglePasswordVisibility}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-virtus-gold"
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full px-4 py-3 rounded-md btn-gold text-base font-medium flex items-center justify-center"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 size={18} className="animate-spin mr-2" />
-                    Processando...
-                  </>
-                ) : (
-                  <>
-                    Entrar
-                    <LogIn size={18} className="ml-2" />
-                  </>
-                )}
-              </button>
-            </form>
-            
-            <div className="mt-6 text-center">
-              <p className="text-gray-400">
-                Não tem uma conta?{' '}
-                <Link to="/register" className="text-virtus-gold hover:underline">
-                  Cadastre-se
-                </Link>
-              </p>
-            </div>
+              </form>
+            </Form>
+          </div>
+          
+          <div className="mt-8 text-center text-gray-500 text-sm">
+            <p>O acesso administrativo é reservado para a equipe VIRTUS.</p>
           </div>
         </div>
       </div>
