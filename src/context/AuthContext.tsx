@@ -162,7 +162,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       navigate('/home');
     } catch (error: any) {
       console.error('Error signing in:', error);
-      toast.error('Credenciais inválidas. Por favor, tente novamente.');
+      throw new Error('Credenciais inválidas. Por favor, tente novamente.');
     } finally {
       setLoading(false);
     }

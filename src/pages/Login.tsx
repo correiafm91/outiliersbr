@@ -49,19 +49,6 @@ const Login = () => {
     setLoginError(null);
     
     try {
-      // Para simplificar, vamos simular login
-      if (values.email === 'teste@outliers.com' && values.password === 'senha123') {
-        // Mock do login para fins de demonstração
-        localStorage.setItem('outliers-user', JSON.stringify({
-          id: 'user-1',
-          email: values.email,
-        }));
-        localStorage.setItem('outliers-token', 'mock-jwt-token');
-        
-        window.location.href = '/home';
-        return;
-      }
-      
       await signIn(values.email, values.password);
       // Navigate is handled in the useEffect when user state changes
     } catch (error: any) {
@@ -133,6 +120,12 @@ const Login = () => {
                     </FormItem>
                   )}
                 />
+                
+                <div className="pt-2 text-sm text-gray-400">
+                  <p>Credenciais de demonstração:</p>
+                  <p>Email: teste@outliers.com</p>
+                  <p>Senha: senha123</p>
+                </div>
                 
                 <button
                   type="submit"

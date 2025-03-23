@@ -90,3 +90,40 @@
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(51, 195, 240, 0.3);
 }
+
+/* Custom tailwind styles */
+.bg-outliers-dark {
+  background-color: #1E1E1E;
+}
+
+.bg-outliers-gray {
+  background-color: #2A2A2A;
+}
+
+.bg-outliers-blue {
+  background-color: #33C3F0;
+}
+
+.text-outliers-blue {
+  color: #33C3F0;
+}
+
+.border-outliers-blue {
+  border-color: #33C3F0;
+}
+
+.hover\:bg-outliers-blue:hover {
+  background-color: #33C3F0;
+}
+
+.hover\:text-outliers-blue:hover {
+  color: #33C3F0;
+}
+
+.focus\:border-outliers-blue:focus {
+  border-color: #33C3F0;
+}
+
+.focus\:ring-outliers-blue:focus {
+  --tw-ring-color: #33C3F0;
+}

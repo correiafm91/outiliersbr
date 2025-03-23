@@ -1,7 +1,6 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Loader2, ThumbsUp, MessageSquare, Bookmark, Share2, Play, Users } from 'lucide-react';
+import { Loader2, ThumbsUp, MessageSquare, Bookmark, Share2, Play, Users, Bell, Search, UserCircle, Plus } from 'lucide-react';
 import { toast } from "sonner";
 import { supabase, formatLocalDate, formatLocalDateTime } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
