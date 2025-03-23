@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,54 +7,54 @@
 
 @layer base {
   :root {
-    --background: 0 0% 7%;
-    --foreground: 0 0% 98%;
+    --background: 0 0% 12%;
+    --foreground: 0 0% 100%;
 
-    --card: 0 0% 12%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 15%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 43 74% 49%;
+    --primary: 196 83% 57%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 0 0% 25%;
+    --muted-foreground: 0 0% 70%;
 
-    --accent: 43 74% 49%;
+    --accent: 196 83% 57%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 43 74% 49%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 196 83% 57%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 7%;
-    --sidebar-foreground: 43 74% 49%;
-    --sidebar-primary: 43 74% 49%;
-    --sidebar-primary-foreground: 0 0% 7%;
-    --sidebar-accent: 0 0% 12%;
-    --sidebar-accent-foreground: 43 74% 49%;
-    --sidebar-border: 0 0% 18%;
-    --sidebar-ring: 43 74% 49%;
+    --sidebar-background: 0 0% 12%;
+    --sidebar-foreground: 196 83% 57%;
+    --sidebar-primary: 196 83% 57%;
+    --sidebar-primary-foreground: 0 0% 12%;
+    --sidebar-accent: 0 0% 20%;
+    --sidebar-accent-foreground: 196 83% 57%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 196 83% 57%;
   }
 }
 
 @layer base {
   * {
-    @apply border-border selection:bg-virtus-gold/20 selection:text-virtus-gold;
+    @apply border-border selection:bg-outliers-blue/20 selection:text-outliers-blue;
   }
   
   body {
-    @apply bg-virtus-black text-virtus-offwhite font-inter antialiased;
+    @apply bg-outliers-dark text-white font-inter antialiased;
   }
 
   html {
@@ -62,25 +62,25 @@
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-playfair;
+    @apply font-montserrat;
   }
 }
 
 @layer components {
   .glass-panel {
-    @apply bg-virtus-darkgray/85 backdrop-blur-lg border border-white/10 shadow-xl;
+    @apply bg-outliers-gray/85 backdrop-blur-lg border border-white/10 shadow-xl;
   }
   
-  .text-gold {
-    @apply text-virtus-gold;
+  .text-blue {
+    @apply text-outliers-blue;
   }
   
-  .btn-gold {
-    @apply bg-virtus-gold text-virtus-black hover:bg-virtus-lightgold transition-colors duration-300 flex items-center justify-center;
+  .btn-blue {
+    @apply bg-outliers-blue text-white hover:bg-outliers-blue/80 transition-colors duration-300 flex items-center justify-center;
   }
   
   .input-dark {
-    @apply bg-virtus-black/70 border-virtus-gold/30 focus:border-virtus-gold text-virtus-offwhite placeholder:text-gray-500;
+    @apply bg-outliers-dark/70 border-outliers-blue/30 focus:border-outliers-blue text-white placeholder:text-gray-500;
   }
   
   .card-hover {
@@ -105,18 +105,22 @@
   font-family: 'Inter', sans-serif;
 }
 
-.font-playfair {
-  font-family: 'Playfair Display', serif;
+.font-montserrat {
+  font-family: 'Montserrat', sans-serif;
 }
 
-.text-shadow-gold {
-  text-shadow: 0 0 8px rgba(218, 165, 32, 0.5);
+.text-shadow-blue {
+  text-shadow: 0 0 8px rgba(51, 195, 240, 0.5);
 }
 
-.gold-glow {
-  box-shadow: 0 0 15px rgba(218, 165, 32, 0.5);
+.blue-glow {
+  box-shadow: 0 0 15px rgba(51, 195, 240, 0.5);
 }
 
 .animate-smooth {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.verified-badge {
+  @apply p-0.5 bg-outliers-blue rounded-full text-white;
 }

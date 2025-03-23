@@ -1,3 +1,4 @@
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -12,7 +13,7 @@
   transition: filter 300ms;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+  filter: drop-shadow(0 0 2em #33C3F0aa);
 }
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
@@ -39,4 +40,36 @@
 
 .read-the-docs {
   color: #888;
+}
+
+/* Outliers specific styles */
+.outliers-container {
+  background-color: #1E1E1E;
+  color: white;
+}
+
+.outliers-accent {
+  color: #33C3F0;
+}
+
+.outliers-button {
+  background-color: #33C3F0;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.outliers-button:hover {
+  background-color: #29a8d0;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(51, 195, 240, 0.3);
+}
+
+.verified-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: #33C3F0;
+  color: white;
+  border-radius: 9999px;
+  padding: 0.125rem;
+  margin-left: 0.375rem;
 }

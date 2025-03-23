@@ -1,6 +1,12 @@
+
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import { useNavigate, Link } from 'react-router-dom';
+import { Loader2, ThumbsUp, MessageSquare, Bookmark, Share2, Play, Users } from 'lucide-react';
+import { toast } from "sonner";
+import { supabase, formatLocalDate, formatLocalDateTime } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
+import Navbar from '@/components/Navbar';
+import CommentSection from '@/components/CommentSection';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -49,7 +55,7 @@ const Home = () => {
         }
       } catch (error) {
         console.error('Error loading content:', error);
-        toast.error('Erro ao carregar conteúdos');
+        toast.error('Error loading content');
       } finally {
         setLoading(false);
       }
@@ -85,7 +91,7 @@ const Home = () => {
           .delete()
           .eq('id', existingLike.id);
         
-        toast.success('Like removido!');
+        toast.success('Like removed!');
       } else {
         // Add like
         await supabase
@@ -95,7 +101,7 @@ const Home = () => {
             user_id: user.id,
           });
         
-        toast.success('Conteúdo curtido!');
+        toast.success('Content liked!');
       }
       
       // Refresh content
@@ -121,12 +127,12 @@ const Home = () => {
       }
     } catch (error) {
       console.error('Error handling like:', error);
-      toast.error('Erro ao processar ação');
+      toast.error('Error processing action');
     }
   };
 
   const handleBookmark = () => {
-    toast.success("Conteúdo salvo para ver mais tarde!");
+    toast.success("Content saved for later!");
   };
 
   const handleShare = (title: string) => {
@@ -135,10 +141,10 @@ const Home = () => {
     
     // Copy to clipboard
     navigator.clipboard.writeText(shareUrl).then(() => {
-      toast.success("Link copiado para a área de transferência!");
+      toast.success("Link copied to clipboard!");
     }).catch(err => {
       console.error('Failed to copy: ', err);
-      toast.error("Erro ao copiar link");
+      toast.error("Error copying link");
     });
   };
 
@@ -156,7 +162,7 @@ const Home = () => {
       
       if (error) throw error;
       
-      toast.success('Comentário adicionado com sucesso!');
+      toast.success('Comment added successfully!');
       
       // Refresh content
       const { data: updatedContent } = await supabase
@@ -181,23 +187,23 @@ const Home = () => {
       }
     } catch (error) {
       console.error('Error adding comment:', error);
-      toast.error('Erro ao adicionar comentário');
+      toast.error('Error adding comment');
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-virtus-black">
+      <div className="min-h-screen flex flex-col bg-outliers-dark">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
-          <Loader2 size={48} className="animate-spin text-virtus-gold" />
+          <Loader2 size={48} className="animate-spin text-outliers-blue" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-virtus-black">
+    <div className="min-h-screen flex flex-col bg-outliers-dark">
       <Navbar />
       
       <div className="flex-1 pt-24 pb-16 px-4">
@@ -206,11 +212,11 @@ const Home = () => {
             {/* Main content */}
             <div className="lg:w-2/3 space-y-8">
               <div className="glass-panel p-6 rounded-xl animate-fade-in">
-                <h1 className="text-2xl md:text-3xl font-bold text-virtus-offwhite mb-2">
-                  Bem-vindo à <span className="text-virtus-gold">Retórica de Marcas</span>
+                <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                  Welcome to <span className="text-outliers-blue">Outliers</span>
                 </h1>
                 <p className="text-gray-300">
-                  Explore a arte de criar marcas memoráveis com a VIRTUS. Nossa comunidade exclusiva traz conteúdos especializados em Retórica de Marcas, um serviço único desenvolvido para transformar sua identidade de negócio.
+                  Connect with industry leaders and grow your professional network. Outliers is your platform for meaningful business connections and opportunities.
                 </p>
               </div>
               
@@ -226,19 +232,19 @@ const Home = () => {
                             className="w-10 h-10 rounded-full mr-3 object-cover"
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-virtus-gold/20 flex items-center justify-center mr-3">
-                            <span className="text-virtus-gold font-medium">
-                              {item.profiles?.owner_name.charAt(0) || 'V'}
+                          <div className="w-10 h-10 rounded-full bg-outliers-blue/20 flex items-center justify-center mr-3">
+                            <span className="text-outliers-blue font-medium">
+                              {item.profiles?.owner_name.charAt(0) || 'O'}
                             </span>
                           </div>
                         )}
                         <div>
-                          <h3 className="font-medium text-virtus-offwhite">{item.profiles?.owner_name || 'VIRTUS'}</h3>
+                          <h3 className="font-medium text-white">{item.profiles?.owner_name || 'Outliers'}</h3>
                           <p className="text-sm text-gray-400">{formatLocalDate(item.created_at)}</p>
                         </div>
                       </div>
                       
-                      <h2 className="text-xl font-bold text-virtus-gold mb-3">{item.title}</h2>
+                      <h2 className="text-xl font-bold text-outliers-blue mb-3">{item.title}</h2>
                       
                       {item.type === 'article' && item.content && (
                         <p className="text-gray-300 mb-4">{item.content}</p>
@@ -252,15 +258,15 @@ const Home = () => {
                             className="w-full h-56 object-cover"
                           />
                           <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                            <button className="w-16 h-16 rounded-full bg-virtus-gold/80 hover:bg-virtus-gold transition-colors flex items-center justify-center">
-                              <Play size={32} className="text-virtus-black ml-1" />
+                            <button className="w-16 h-16 rounded-full bg-outliers-blue/80 hover:bg-outliers-blue transition-colors flex items-center justify-center">
+                              <Play size={32} className="text-white ml-1" />
                             </button>
                           </div>
                           
                           {item.type === 'live' && (
                             <div className="absolute top-3 left-3 bg-red-600 px-3 py-1 rounded-full text-sm text-white flex items-center">
                               <span className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></span>
-                              AO VIVO
+                              LIVE
                             </div>
                           )}
                         </div>
@@ -269,7 +275,7 @@ const Home = () => {
                       {item.type === 'live' && item.scheduled_for && (
                         <div className="flex items-center text-gray-300 mb-4">
                           <Users size={16} className="mr-2" />
-                          <span>Agendado para {formatLocalDateTime(item.scheduled_for)}</span>
+                          <span>Scheduled for {formatLocalDateTime(item.scheduled_for)}</span>
                         </div>
                       )}
                       
@@ -277,15 +283,15 @@ const Home = () => {
                         <div className="flex items-center space-x-4">
                           <button 
                             onClick={() => handleLike(item.id)}
-                            className="flex items-center text-gray-400 hover:text-virtus-gold transition-colors"
+                            className="flex items-center text-gray-400 hover:text-outliers-blue transition-colors"
                           >
                             <ThumbsUp size={18} className="mr-1" />
-                            <span>Curtir</span>
+                            <span>Like</span>
                           </button>
                           
                           <button 
                             onClick={() => toggleComments(item.id)}
-                            className="flex items-center text-gray-400 hover:text-virtus-gold transition-colors"
+                            className="flex items-center text-gray-400 hover:text-outliers-blue transition-colors"
                           >
                             <MessageSquare size={18} className="mr-1" />
                             <span>{item.comments?.length || 0}</span>
@@ -295,14 +301,14 @@ const Home = () => {
                         <div className="flex items-center space-x-4">
                           <button 
                             onClick={handleBookmark}
-                            className="text-gray-400 hover:text-virtus-gold transition-colors"
+                            className="text-gray-400 hover:text-outliers-blue transition-colors"
                           >
                             <Bookmark size={18} />
                           </button>
                           
                           <button 
                             onClick={() => handleShare(item.title)}
-                            className="text-gray-400 hover:text-virtus-gold transition-colors"
+                            className="text-gray-400 hover:text-outliers-blue transition-colors"
                           >
                             <Share2 size={18} />
                           </button>
@@ -321,9 +327,9 @@ const Home = () => {
                 ))
               ) : (
                 <div className="glass-panel rounded-xl p-8 text-center">
-                  <h2 className="text-xl font-bold text-virtus-gold mb-4">Sem conteúdos disponíveis</h2>
+                  <h2 className="text-xl font-bold text-outliers-blue mb-4">No content available</h2>
                   <p className="text-gray-300 mb-4">
-                    Não há conteúdos publicados no momento. Volte em breve para novidades sobre Retórica de Marcas.
+                    There are no posts available at the moment. Come back soon for updates.
                   </p>
                 </div>
               )}
@@ -334,23 +340,39 @@ const Home = () => {
               {/* Profile card */}
               <div className="glass-panel rounded-xl p-6 animate-fade-in">
                 <div className="flex items-center">
-                  <div className="mr-4">
+                  <div className="mr-4 relative">
                     {profile.photo_url ? (
-                      <img 
-                        src={profile.photo_url} 
-                        alt={profile.owner_name}
-                        className="w-16 h-16 rounded-full object-cover border-2 border-virtus-gold"
-                      />
+                      <div className="relative">
+                        <img 
+                          src={profile.photo_url} 
+                          alt={profile.owner_name}
+                          className="w-16 h-16 rounded-full object-cover border-2 border-outliers-blue"
+                        />
+                        {profile.owner_name === "Outliersofc" && (
+                          <div className="absolute -bottom-1 -right-1 bg-outliers-blue text-white rounded-full p-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
                     ) : (
-                      <div className="w-16 h-16 rounded-full bg-virtus-darkgray flex items-center justify-center border-2 border-virtus-gold">
-                        <span className="text-xl font-bold text-virtus-gold">
+                      <div className="w-16 h-16 rounded-full bg-outliers-gray flex items-center justify-center border-2 border-outliers-blue">
+                        <span className="text-xl font-bold text-outliers-blue">
                           {profile.owner_name.charAt(0)}
                         </span>
                       </div>
                     )}
                   </div>
                   <div>
-                    <h3 className="font-bold text-virtus-offwhite">{profile.owner_name}</h3>
+                    <div className="flex items-center">
+                      <h3 className="font-bold text-white">{profile.owner_name}</h3>
+                      {profile.owner_name === "Outliersofc" && (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1 text-outliers-blue" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
                     <p className="text-sm text-gray-400">{profile.business_name}</p>
                   </div>
                 </div>
@@ -364,22 +386,22 @@ const Home = () => {
                 <div className="mt-4 pt-4 border-t border-gray-700">
                   <Link 
                     to="/create-content" 
-                    className="w-full px-4 py-2 rounded-md border border-virtus-gold/50 text-virtus-gold hover:bg-virtus-gold/10 transition-colors text-sm flex items-center justify-center"
+                    className="w-full px-4 py-2 rounded-md border border-outliers-blue/50 text-outliers-blue hover:bg-outliers-blue/10 transition-colors text-sm flex items-center justify-center"
                   >
-                    <PlusCircle size={16} className="mr-2" />
-                    Criar Conteúdo
+                    <Loader2 size={16} className="mr-2" />
+                    Create Post
                   </Link>
                 </div>
               </div>
               
-              {/* About Retórica de Marcas */}
+              {/* About Outliers */}
               <div className="glass-panel rounded-xl p-6 animate-fade-in">
-                <h3 className="text-lg font-bold text-virtus-offwhite mb-4">Sobre Retórica de Marcas</h3>
+                <h3 className="text-lg font-bold text-white mb-4">About Outliers</h3>
                 <p className="text-gray-300 text-sm mb-4">
-                  A Retórica de Marcas é um serviço exclusivo da VIRTUS que combina estratégia, psicologia e design para criar marcas com personalidade única e comunicação poderosa.
+                  Outliers is a professional networking platform designed to connect forward-thinking entrepreneurs and business professionals.
                 </p>
                 <p className="text-gray-300 text-sm">
-                  Nossa metodologia exclusiva transforma negócios através de uma identidade autêntica e memorável, conectando-se profundamente com seu público-alvo.
+                  Our platform helps you build meaningful business relationships, discover opportunities, and grow your professional network.
                 </p>
               </div>
             </div>
