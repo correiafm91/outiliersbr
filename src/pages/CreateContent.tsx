@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
-import { Image, Video, Upload, X, Loader2, Upload as UploadIcon, Hash, ArrowRight, Globe, Users, Clock } from 'lucide-react';
+import { Image, Video, Upload, X, Loader2, Upload as UploadIcon, Hash, ArrowRight, Globe, Users, Clock, Check } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
@@ -165,6 +165,23 @@ const CreateContent = () => {
           const fileName = `content-${user.id}-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
           const fileExt = file.name.split('.').pop();
           const filePath = `content/${fileName}.${fileExt}`;
+          
+          // Check if the bucket exists first
+          const { data: buckets } = await supabase.storage.listBuckets();
+          const bucketExists = buckets?.some(bucket => bucket.name === 'outliers');
+          
+          // Create the bucket if it doesn't exist
+          if (!bucketExists) {
+            const { error: createBucketError } = await supabase.storage.createBucket('outliers', {
+              public: true,
+              fileSizeLimit: 52428800 // 50MB
+            });
+            
+            if (createBucketError) {
+              console.error('Error creating bucket:', createBucketError);
+              throw new Error('Não foi possível criar o armazenamento para mídia. Tente novamente.');
+            }
+          }
           
           const { error: uploadError } = await supabase.storage
             .from('outliers')

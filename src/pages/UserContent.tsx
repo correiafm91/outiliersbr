@@ -110,17 +110,17 @@ const UserContent = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-virtus-black">
+      <div className="min-h-screen flex flex-col bg-outliers-dark">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
-          <Loader2 size={48} className="animate-spin text-virtus-gold" />
+          <Loader2 size={48} className="animate-spin text-outliers-blue" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-virtus-black">
+    <div className="min-h-screen flex flex-col bg-outliers-dark">
       <Navbar />
       
       <div className="flex-1 pt-24 pb-16 px-4">
@@ -128,17 +128,17 @@ const UserContent = () => {
           <div className="glass-panel rounded-xl p-6 mb-8 animate-fade-in">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-virtus-offwhite mb-2">
-                  Meus <span className="text-virtus-gold">Conteúdos</span>
+                <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                  Meus <span className="text-outliers-blue">Conteúdos</span>
                 </h1>
                 <p className="text-gray-300">
-                  Gerencie os conteúdos que você criou na comunidade VIRTUS
+                  Gerencie os conteúdos que você criou na comunidade Outliers
                 </p>
               </div>
               
               <Link
                 to="/create-content"
-                className="mt-4 md:mt-0 px-6 py-3 rounded-md btn-gold text-base font-medium flex items-center"
+                className="mt-4 md:mt-0 px-6 py-3 rounded-md btn-blue text-base font-medium flex items-center"
               >
                 <PlusCircle size={18} className="mr-2" />
                 Novo Conteúdo
@@ -152,8 +152,8 @@ const UserContent = () => {
                 onClick={() => setActiveTab('all')}
                 className={`px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap ${
                   activeTab === 'all' 
-                    ? 'bg-virtus-gold text-virtus-black' 
-                    : 'bg-virtus-darkgray text-gray-300 hover:bg-virtus-darkgray/70'
+                    ? 'bg-outliers-blue text-white' 
+                    : 'bg-outliers-gray text-gray-300 hover:bg-outliers-gray/70'
                 }`}
               >
                 Todos
@@ -162,8 +162,8 @@ const UserContent = () => {
                 onClick={() => setActiveTab('published')}
                 className={`px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap ${
                   activeTab === 'published' 
-                    ? 'bg-virtus-gold text-virtus-black' 
-                    : 'bg-virtus-darkgray text-gray-300 hover:bg-virtus-darkgray/70'
+                    ? 'bg-outliers-blue text-white' 
+                    : 'bg-outliers-gray text-gray-300 hover:bg-outliers-gray/70'
                 }`}
               >
                 Publicados
@@ -172,8 +172,8 @@ const UserContent = () => {
                 onClick={() => setActiveTab('drafts')}
                 className={`px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap ${
                   activeTab === 'drafts' 
-                    ? 'bg-virtus-gold text-virtus-black' 
-                    : 'bg-virtus-darkgray text-gray-300 hover:bg-virtus-darkgray/70'
+                    ? 'bg-outliers-blue text-white' 
+                    : 'bg-outliers-gray text-gray-300 hover:bg-outliers-gray/70'
                 }`}
               >
                 Rascunhos
@@ -185,18 +185,18 @@ const UserContent = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="bg-virtus-darkgray/70">
-                    <th className="px-6 py-4 text-left text-sm font-medium text-virtus-gold">Título</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-virtus-gold">Tipo</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-virtus-gold">Data</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-virtus-gold">Status</th>
-                    <th className="px-6 py-4 text-right text-sm font-medium text-virtus-gold">Ações</th>
+                  <tr className="bg-outliers-gray/70">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-outliers-blue">Título</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-outliers-blue">Tipo</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-outliers-blue">Data</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-outliers-blue">Status</th>
+                    <th className="px-6 py-4 text-right text-sm font-medium text-outliers-blue">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-700">
                   {filteredContent.length > 0 ? (
                     filteredContent.map((item) => (
-                      <tr key={item.id} className="animate-fade-in hover:bg-virtus-darkgray/40 transition-colors">
+                      <tr key={item.id} className="animate-fade-in hover:bg-outliers-gray/40 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="flex-shrink-0 w-10 h-10 mr-3">
@@ -224,7 +224,7 @@ const UserContent = () => {
                                 </div>
                               )}
                             </div>
-                            <div className="text-sm font-medium text-virtus-offwhite">
+                            <div className="text-sm font-medium text-white">
                               {item.title}
                             </div>
                           </div>
@@ -294,7 +294,7 @@ const UserContent = () => {
             <div className="mt-8 text-center">
               <Link 
                 to="/create-content"
-                className="px-6 py-3 rounded-md btn-gold text-base font-medium inline-flex items-center"
+                className="px-6 py-3 rounded-md btn-blue text-base font-medium inline-flex items-center"
               >
                 <PlusCircle size={18} className="mr-2" />
                 Criar Meu Primeiro Conteúdo
@@ -309,7 +309,7 @@ const UserContent = () => {
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="glass-panel rounded-xl w-full max-w-md animate-fade-in">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-virtus-offwhite mb-4">Confirmar Exclusão</h2>
+              <h2 className="text-xl font-bold text-white mb-4">Confirmar Exclusão</h2>
               <p className="text-gray-300 mb-6">
                 Tem certeza que deseja excluir este conteúdo? Esta ação não pode ser desfeita.
               </p>
@@ -317,7 +317,7 @@ const UserContent = () => {
               <div className="flex justify-end space-x-4">
                 <button
                   onClick={() => setShowDeleteModal(null)}
-                  className="px-4 py-2 rounded-md border border-gray-600 text-gray-300 hover:bg-virtus-darkgray transition-colors"
+                  className="px-4 py-2 rounded-md border border-gray-600 text-gray-300 hover:bg-outliers-gray transition-colors"
                 >
                   Cancelar
                 </button>

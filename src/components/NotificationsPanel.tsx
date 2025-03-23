@@ -2,8 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Bell, X, Settings, Heart, MessageSquare, UserPlus } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { formatLocalDateTime } from '@/integrations/supabase/client';
+import { supabase, formatLocalDateTime } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 type Notification = {
@@ -32,59 +31,15 @@ const NotificationsPanel = () => {
     // Fetch notifications
     const fetchNotifications = async () => {
       try {
+        setLoading(true);
+        
         // In a real app, we would fetch from the notifications table
-        // For now, we'll create mock notifications
-        const mockNotifications: Notification[] = [
-          {
-            id: '1',
-            user_id: user.id,
-            type: 'like',
-            content: 'curtiu seu post "Estratégias de Networking Empresarial"',
-            sender_id: 'user-2',
-            sender_name: 'Outliersofc',
-            sender_photo: 'https://i.postimg.cc/YSzyP9rT/High-resolution-stock-photo-A-professional-commercial-image-showcasing-a-grey-letter-O-logo-agains.jpg',
-            content_id: 'content-1',
-            created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-            read: false
-          },
-          {
-            id: '2',
-            user_id: user.id,
-            type: 'comment',
-            content: 'comentou em seu post "Como fazer networking efetivo"',
-            sender_id: 'user-3',
-            sender_name: 'Maria Silva',
-            sender_photo: '',
-            content_id: 'content-2',
-            created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5 hours ago
-            read: false
-          },
-          {
-            id: '3',
-            user_id: user.id,
-            type: 'follow',
-            content: 'começou a seguir você',
-            sender_id: 'user-4',
-            sender_name: 'João Martins',
-            sender_photo: '',
-            created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
-            read: true
-          },
-          {
-            id: '4',
-            user_id: user.id,
-            type: 'system',
-            content: 'Bem-vindo à Outliers! Complete seu perfil para começar a fazer networking.',
-            created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
-            read: true
-          }
-        ];
-
-        setNotifications(mockNotifications);
-        setUnreadCount(mockNotifications.filter(n => !n.read).length);
+        // For now, we'll just show an empty state
+        setNotifications([]);
+        setUnreadCount(0);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching notifications:', error);
+        console.error('Erro ao carregar notificações:', error);
         setLoading(false);
       }
     };
@@ -92,7 +47,6 @@ const NotificationsPanel = () => {
     fetchNotifications();
 
     // Set up real-time listener for new notifications
-    // This would be implemented with Supabase Realtime in a production app
     const channel = supabase
       .channel('notification-changes')
       .on('broadcast', { event: 'new-notification' }, (payload) => {
