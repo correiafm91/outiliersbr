@@ -39,3 +39,9 @@ export const formatLocalDateTime = (dateString: string): string => {
     timeZone: 'America/Sao_Paulo'
   }).format(date);
 };
+
+// Utilitário para verificar se a URL de arquivo está nos buckets do Supabase
+export const getStorageUrl = (path: string): string => {
+  if (!path || path.startsWith('http')) return path;
+  return `${SUPABASE_URL}/storage/v1/object/public/outliers/${path}`;
+};

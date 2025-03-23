@@ -48,7 +48,7 @@ const CommentSection = ({ contentId, comments, onAddComment }: CommentSectionPro
     }
     
     try {
-      // Check if already liked
+      // Verificar se já curtiu
       const { data: existingLike } = await supabase
         .from('likes')
         .select('id')
@@ -57,7 +57,7 @@ const CommentSection = ({ contentId, comments, onAddComment }: CommentSectionPro
         .maybeSingle();
       
       if (existingLike) {
-        // Unlike
+        // Remover curtida
         await supabase
           .from('likes')
           .delete()
@@ -69,7 +69,7 @@ const CommentSection = ({ contentId, comments, onAddComment }: CommentSectionPro
           return newSet;
         });
       } else {
-        // Like
+        // Adicionar curtida
         await supabase
           .from('likes')
           .insert({
@@ -84,16 +84,16 @@ const CommentSection = ({ contentId, comments, onAddComment }: CommentSectionPro
         });
       }
       
-      // No need to refresh as we're updating local state
+      // Não precisa recarregar já que estamos atualizando o estado local
     } catch (error) {
-      console.error('Error liking comment:', error);
+      console.error('Erro ao curtir comentário:', error);
       toast.error('Erro ao curtir comentário');
     }
   };
 
   return (
     <div className="mt-6 pt-4 border-t border-gray-700">
-      <h3 className="text-virtus-offwhite font-medium mb-4">Comentários ({comments.length})</h3>
+      <h3 className="text-outliers-offwhite font-medium mb-4">Comentários ({comments.length})</h3>
       
       <form onSubmit={handleSubmit} className="mb-6">
         <div className="flex">
@@ -102,12 +102,12 @@ const CommentSection = ({ contentId, comments, onAddComment }: CommentSectionPro
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             placeholder="Escreva um comentário..."
-            className="flex-1 px-4 py-2 rounded-l-md input-dark transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-virtus-gold/50"
+            className="flex-1 px-4 py-2 rounded-l-md input-dark transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-outliers-blue/50"
           />
           <button
             type="submit"
             disabled={!commentText.trim() || submitting}
-            className="px-4 py-2 rounded-r-md btn-gold disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            className="px-4 py-2 rounded-r-md btn-blue disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             {submitting ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
           </button>
@@ -125,16 +125,16 @@ const CommentSection = ({ contentId, comments, onAddComment }: CommentSectionPro
                   className="w-10 h-10 rounded-full mr-3 flex-shrink-0 object-cover"
                 />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-virtus-gold/20 flex items-center justify-center mr-3 flex-shrink-0">
-                  <span className="text-virtus-gold font-medium">
+                <div className="w-10 h-10 rounded-full bg-outliers-blue/20 flex items-center justify-center mr-3 flex-shrink-0">
+                  <span className="text-outliers-blue font-medium">
                     {comment.profiles?.owner_name.charAt(0) || '?'}
                   </span>
                 </div>
               )}
               <div className="flex-1">
-                <div className="bg-virtus-darkgray/70 p-3 rounded-lg">
+                <div className="bg-outliers-darkgray/70 p-3 rounded-lg">
                   <div className="flex justify-between items-start mb-1">
-                    <h4 className="font-medium text-virtus-offwhite">{comment.profiles?.owner_name}</h4>
+                    <h4 className="font-medium text-outliers-offwhite">{comment.profiles?.owner_name}</h4>
                     <span className="text-xs text-gray-400">{formatLocalDateTime(comment.created_at)}</span>
                   </div>
                   <p className="text-gray-300 text-sm">{comment.content}</p>
@@ -142,14 +142,14 @@ const CommentSection = ({ contentId, comments, onAddComment }: CommentSectionPro
                 <div className="flex items-center mt-2 text-xs text-gray-400">
                   <button 
                     onClick={() => handleLikeComment(comment.id)}
-                    className={`flex items-center mr-4 hover:text-virtus-gold transition-colors ${
-                      likedComments.has(comment.id) ? 'text-virtus-gold' : ''
+                    className={`flex items-center mr-4 hover:text-outliers-blue transition-colors ${
+                      likedComments.has(comment.id) ? 'text-outliers-blue' : ''
                     }`}
                   >
                     <ThumbsUp size={14} className="mr-1" />
                     <span>{comment.likes + (likedComments.has(comment.id) ? 1 : 0)}</span>
                   </button>
-                  <button className="hover:text-virtus-gold transition-colors">
+                  <button className="hover:text-outliers-blue transition-colors">
                     Responder
                   </button>
                 </div>
@@ -158,7 +158,7 @@ const CommentSection = ({ contentId, comments, onAddComment }: CommentSectionPro
           ))
         ) : (
           <p className="text-center text-gray-400 py-4">
-            Seja o primeiro a comentar sobre Retórica de Marcas!
+            Seja o primeiro a comentar!
           </p>
         )}
       </div>

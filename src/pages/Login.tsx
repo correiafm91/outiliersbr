@@ -29,7 +29,7 @@ const Login = () => {
   const [loginError, setLoginError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // If already logged in, redirect to home
+  // Se já estiver logado, redirecionar para home
   useEffect(() => {
     if (user) {
       navigate('/home');
