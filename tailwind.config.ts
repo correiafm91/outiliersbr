@@ -29,6 +29,13 @@ export default {
         ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
+        outliers: {
+          dark: '#1E1E1E',     // Dark gray/almost black
+          gray: '#333333',     // Medium gray
+          lightgray: '#555555', // Light gray
+          blue: '#33C3F0',     // Light blue main color
+          softblue: '#D3E4FD', // Softer blue for accents
+        },
         virtus: {
           black: '#121212',
           darkgray: '#1E1E1E',
@@ -97,12 +104,12 @@ export default {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
-        'pulse-gold': {
+        'pulse-blue': {
           '0%, 100%': { 
-            boxShadow: '0 0 0 0 rgba(218, 165, 32, 0.4)',
+            boxShadow: '0 0 0 0 rgba(51, 195, 240, 0.4)',
           },
           '50%': { 
-            boxShadow: '0 0 0 10px rgba(218, 165, 32, 0)',
+            boxShadow: '0 0 0 10px rgba(51, 195, 240, 0)',
           },
         },
       },
@@ -111,7 +118,7 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in': 'fade-in 0.6s ease-out',
         'fade-up': 'fade-up 0.5s ease-out',
-        'pulse-gold': 'pulse-gold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'pulse-blue': 'pulse-blue 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       transitionProperty: {
         'height': 'height',

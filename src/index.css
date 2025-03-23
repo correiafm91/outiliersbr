@@ -50,7 +50,11 @@
 
 @layer base {
   * {
-    @apply border-border selection:bg-outliers-blue/20 selection:text-outliers-blue;
+    @apply border-border;
+  }
+  
+  *::selection {
+    @apply bg-outliers-blue/20 text-outliers-blue;
   }
   
   body {
