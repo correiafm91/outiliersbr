@@ -26,26 +26,26 @@ const Index = () => {
                 ${isLoaded ? 'opacity-100' : 'opacity-0 -translate-y-10'}`}
             >
               <div className="inline-block px-3 py-1 rounded-full border border-outliers-blue/30 bg-outliers-blue/10 mb-4">
-                <span className="text-sm font-medium text-outliers-blue">Professional Networking</span>
+                <span className="text-sm font-medium text-outliers-blue">Networking Profissional</span>
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-white">
-                Connect with <span className="text-outliers-blue text-shadow-blue">Outliers</span> Network
+                Conecte-se com a rede <span className="text-outliers-blue text-shadow-blue">Outliers</span>
               </h1>
               <p className="text-lg md:text-xl text-gray-300 max-w-xl">
-                Join the exclusive business networking platform for professionals seeking meaningful connections and growth opportunities.
+                Junte-se à plataforma exclusiva de networking para profissionais que buscam conexões significativas e oportunidades de crescimento.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <Link 
                   to="/register" 
                   className="px-8 py-4 rounded-md btn-blue text-base font-medium"
                 >
-                  Join Outliers <ArrowRight size={18} className="ml-2" />
+                  Junte-se à Outliers <ArrowRight size={18} className="ml-2" />
                 </Link>
                 <Link 
                   to="/login" 
                   className="px-8 py-4 rounded-md border border-outliers-blue/50 text-outliers-blue bg-transparent hover:bg-outliers-blue/10 transition-colors text-base font-medium flex items-center justify-center"
                 >
-                  Sign In
+                  Entrar
                 </Link>
               </div>
             </div>
@@ -58,8 +58,8 @@ const Index = () => {
                 <div className="glass-panel rounded-2xl overflow-hidden relative z-10 blue-glow">
                   <div className="aspect-video bg-outliers-gray flex items-center justify-center">
                     <div className="text-center p-8">
-                      <h3 className="text-2xl font-bold text-outliers-blue mb-4">Business Networking</h3>
-                      <p className="text-gray-300 mb-6">Exclusive content, networking events, and professional connections.</p>
+                      <h3 className="text-2xl font-bold text-outliers-blue mb-4">Networking Empresarial</h3>
+                      <p className="text-gray-300 mb-6">Conteúdo exclusivo, eventos de networking e conexões profissionais.</p>
                       <button className="animate-pulse-blue w-16 h-16 rounded-full bg-outliers-blue flex items-center justify-center text-white">
                         <ChartNetwork size={32} />
                       </button>
@@ -80,10 +80,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              What we offer for <span className="text-outliers-blue">you</span>
+              O que oferecemos para <span className="text-outliers-blue">você</span>
             </h2>
             <p className="text-gray-300">
-              Our network is built to connect professionals and offer exclusive opportunities for business growth.
+              Nossa rede é construída para conectar profissionais e oferecer oportunidades exclusivas para crescimento empresarial.
             </p>
           </div>
 
@@ -91,18 +91,18 @@ const Index = () => {
             {[
               {
                 icon: <Users size={48} className="text-outliers-blue" />,
-                title: "Expert Network",
-                description: "Connect with industry leaders and professionals who share your business goals."
+                title: "Rede de Especialistas",
+                description: "Conecte-se com líderes do setor e profissionais que compartilham seus objetivos de negócios."
               },
               {
                 icon: <BarChart2 size={48} className="text-outliers-blue" />,
-                title: "Growth Insights",
-                description: "Access valuable market insights and business analytics to drive your success."
+                title: "Insights de Crescimento",
+                description: "Acesse insights valiosos de mercado e análises de negócios para impulsionar seu sucesso."
               },
               {
                 icon: <BookOpen size={48} className="text-outliers-blue" />,
-                title: "Industry Knowledge",
-                description: "Learn from experts through exclusive content and professional resources."
+                title: "Conhecimento do Setor",
+                description: "Aprenda com especialistas através de conteúdo exclusivo e recursos profissionais."
               }
             ].map((feature, index) => (
               <div 
@@ -126,16 +126,16 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="glass-panel rounded-2xl p-10 md:p-16 text-center max-w-4xl mx-auto blue-glow">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              Ready to grow your <span className="text-outliers-blue">network</span>?
+              Pronto para expandir sua <span className="text-outliers-blue">rede</span>?
             </h2>
             <p className="text-gray-300 mb-10 max-w-2xl mx-auto">
-              Join our professional community today and access exclusive networking opportunities, industry insights, and more.
+              Junte-se à nossa comunidade profissional hoje e acesse oportunidades exclusivas de networking, insights do setor e muito mais.
             </p>
             <Link 
               to="/register" 
               className="px-8 py-4 rounded-md btn-blue text-base font-medium inline-flex items-center"
             >
-              Sign Up Now <ArrowRight size={18} className="ml-2" />
+              Cadastre-se Agora <ArrowRight size={18} className="ml-2" />
             </Link>
           </div>
         </div>
@@ -147,12 +147,12 @@ const Index = () => {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-6 md:mb-0">
               <span className="text-2xl font-montserrat font-bold text-outliers-blue">OUTLIERS</span>
-              <p className="text-gray-400 mt-2">© {new Date().getFullYear()} Outliers Network. All rights reserved.</p>
+              <p className="text-gray-400 mt-2">© {new Date().getFullYear()} Outliers Network. Todos os direitos reservados.</p>
             </div>
             <div className="flex space-x-8">
-              <a href="#" className="text-gray-400 hover:text-outliers-blue transition-colors">Terms</a>
-              <a href="#" className="text-gray-400 hover:text-outliers-blue transition-colors">Privacy</a>
-              <a href="#" className="text-gray-400 hover:text-outliers-blue transition-colors">Contact</a>
+              <a href="#" className="text-gray-400 hover:text-outliers-blue transition-colors">Termos</a>
+              <a href="#" className="text-gray-400 hover:text-outliers-blue transition-colors">Privacidade</a>
+              <a href="#" className="text-gray-400 hover:text-outliers-blue transition-colors">Contato</a>
             </div>
           </div>
         </div>

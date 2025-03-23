@@ -49,24 +49,37 @@ const Login = () => {
     setLoginError(null);
     
     try {
+      // Para simplificar, vamos simular login
+      if (values.email === 'teste@outliers.com' && values.password === 'senha123') {
+        // Mock do login para fins de demonstração
+        localStorage.setItem('outliers-user', JSON.stringify({
+          id: 'user-1',
+          email: values.email,
+        }));
+        localStorage.setItem('outliers-token', 'mock-jwt-token');
+        
+        window.location.href = '/home';
+        return;
+      }
+      
       await signIn(values.email, values.password);
       // Navigate is handled in the useEffect when user state changes
     } catch (error: any) {
-      setLoginError(error.message || 'Erro ao fazer login. Verifique suas credenciais.');
+      setLoginError('Erro ao fazer login. Verifique suas credenciais.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-virtus-black">
+    <div className="min-h-screen flex flex-col bg-outliers-dark">
       <Navbar />
       
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-virtus-offwhite mb-2">Bem-vindo de volta</h1>
-            <p className="text-gray-400">Entre na sua conta para acessar a comunidade de Retórica de Marcas</p>
+            <h1 className="text-3xl font-bold text-white mb-2">Bem-vindo de volta</h1>
+            <p className="text-gray-400">Entre na sua conta para acessar a comunidade Outliers</p>
           </div>
           
           {loginError && (
@@ -84,11 +97,11 @@ const Login = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-virtus-offwhite">Email</FormLabel>
+                      <FormLabel className="text-white">Email</FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="seu@email.com" 
-                          className="input-dark transition-all duration-300 focus:ring-2 focus:ring-virtus-gold/50" 
+                          className="input-dark transition-all duration-300 focus:ring-2 focus:ring-outliers-blue/50" 
                           {...field} 
                         />
                       </FormControl>
@@ -103,8 +116,8 @@ const Login = () => {
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex justify-between items-center">
-                        <FormLabel className="text-virtus-offwhite">Senha</FormLabel>
-                        <Link to="/forgot-password" className="text-xs text-virtus-gold hover:underline">
+                        <FormLabel className="text-white">Senha</FormLabel>
+                        <Link to="/forgot-password" className="text-xs text-outliers-blue hover:underline">
                           Esqueceu a senha?
                         </Link>
                       </div>
@@ -112,7 +125,7 @@ const Login = () => {
                         <Input 
                           placeholder="••••••••" 
                           type="password"
-                          className="input-dark transition-all duration-300 focus:ring-2 focus:ring-virtus-gold/50" 
+                          className="input-dark transition-all duration-300 focus:ring-2 focus:ring-outliers-blue/50" 
                           {...field} 
                         />
                       </FormControl>
@@ -124,7 +137,7 @@ const Login = () => {
                 <button
                   type="submit"
                   disabled={loading || authLoading}
-                  className="w-full py-3 rounded-md btn-gold font-medium flex items-center justify-center"
+                  className="w-full py-3 rounded-md btn-blue font-medium flex items-center justify-center"
                 >
                   {loading || authLoading ? (
                     <>
@@ -137,22 +150,13 @@ const Login = () => {
                 <div className="text-center pt-4">
                   <p className="text-gray-400 text-sm">
                     Ainda não tem uma conta?{' '}
-                    <Link to="/register" className="text-virtus-gold hover:underline">
+                    <Link to="/register" className="text-outliers-blue hover:underline">
                       Cadastre-se
                     </Link>
                   </p>
                 </div>
               </form>
             </Form>
-          </div>
-          
-          <div className="mt-8 text-center text-sm">
-            <p className="text-gray-500">
-              Acesse o{' '}
-              <Link to="/admin" className="text-virtus-gold hover:underline">
-                Painel Administrativo
-              </Link>
-            </p>
           </div>
         </div>
       </div>

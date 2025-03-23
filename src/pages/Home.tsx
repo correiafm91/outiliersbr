@@ -28,40 +28,65 @@ const Home = () => {
       return;
     }
     
-    // Load content from Supabase
-    const loadContent = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('content')
-          .select(`
-            *,
-            profiles:author_id(owner_name, photo_url),
-            comments:comments(
-              id,
-              content,
-              created_at,
-              user_id,
-              profiles:user_id(owner_name, photo_url),
-              likes
-            )
-          `)
-          .eq('published', true)
-          .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-        
-        if (data) {
-          setContent(data);
+    // Simular conteúdo para demonstração
+    setTimeout(() => {
+      const mockContent = [
+        {
+          id: '1',
+          title: 'Como expandir sua rede de contatos profissionais',
+          type: 'article',
+          content: 'Expandir sua rede de contatos profissionais é essencial para o crescimento da sua carreira. Aqui estão algumas dicas para construir conexões significativas no mundo empresarial...',
+          author_id: 'user-1',
+          created_at: new Date().toISOString(),
+          profiles: {
+            owner_name: 'Outliersofc',
+            photo_url: 'https://i.postimg.cc/YSzyP9rT/High-resolution-stock-photo-A-professional-commercial-image-showcasing-a-grey-letter-O-logo-agains.jpg'
+          },
+          comments: [
+            {
+              id: 'c1',
+              content: 'Ótimas dicas! Vou implementar em minha estratégia.',
+              created_at: new Date().toISOString(),
+              user_id: 'user-2',
+              profiles: {
+                owner_name: 'Maria Silva',
+                photo_url: null
+              }
+            }
+          ]
+        },
+        {
+          id: '2',
+          title: 'Webinar: Estratégias de Networking para 2023',
+          type: 'video',
+          thumbnail_url: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&q=80',
+          author_id: 'user-1',
+          created_at: new Date(Date.now() - 86400000).toISOString(), // yesterday
+          profiles: {
+            owner_name: 'Outliersofc',
+            photo_url: 'https://i.postimg.cc/YSzyP9rT/High-resolution-stock-photo-A-professional-commercial-image-showcasing-a-grey-letter-O-logo-agains.jpg'
+          },
+          comments: []
+        },
+        {
+          id: '3',
+          title: 'Live: Tendências de Mercado para Empreendedores',
+          type: 'live',
+          thumbnail_url: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=800&q=80',
+          scheduled_for: new Date(Date.now() + 172800000).toISOString(), // in 2 days
+          author_id: 'user-3',
+          created_at: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+          profiles: {
+            owner_name: 'Carlos Mendes',
+            photo_url: null
+          },
+          comments: []
         }
-      } catch (error) {
-        console.error('Error loading content:', error);
-        toast.error('Error loading content');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    loadContent();
+      ];
+      
+      setContent(mockContent);
+      setLoading(false);
+    }, 1000);
   }, [user, profile, navigate]);
 
   const toggleComments = (contentId: string) => {
@@ -75,6 +100,10 @@ const Home = () => {
   const handleLike = async (contentId: string) => {
     if (!user) return;
     
+    toast.success("Conteúdo curtido!");
+    
+    // Em uma implementação real, aqui enviaria ao Supabase
+    /*
     try {
       // Check if user already liked this content
       const { data: existingLike } = await supabase
@@ -91,7 +120,7 @@ const Home = () => {
           .delete()
           .eq('id', existingLike.id);
         
-        toast.success('Like removed!');
+        toast.success('Like removido!');
       } else {
         // Add like
         await supabase
@@ -101,38 +130,17 @@ const Home = () => {
             user_id: user.id,
           });
         
-        toast.success('Content liked!');
-      }
-      
-      // Refresh content
-      const { data: updatedContent } = await supabase
-        .from('content')
-        .select(`
-          *,
-          profiles:author_id(owner_name, photo_url),
-          comments:comments(
-            id,
-            content,
-            created_at,
-            user_id,
-            profiles:user_id(owner_name, photo_url),
-            likes
-          )
-        `)
-        .eq('published', true)
-        .order('created_at', { ascending: false });
-      
-      if (updatedContent) {
-        setContent(updatedContent);
+        toast.success('Conteúdo curtido!');
       }
     } catch (error) {
       console.error('Error handling like:', error);
-      toast.error('Error processing action');
+      toast.error('Erro ao processar ação');
     }
+    */
   };
 
   const handleBookmark = () => {
-    toast.success("Content saved for later!");
+    toast.success("Conteúdo salvo para depois!");
   };
 
   const handleShare = (title: string) => {
@@ -141,16 +149,45 @@ const Home = () => {
     
     // Copy to clipboard
     navigator.clipboard.writeText(shareUrl).then(() => {
-      toast.success("Link copied to clipboard!");
+      toast.success("Link copiado para a área de transferência!");
     }).catch(err => {
       console.error('Failed to copy: ', err);
-      toast.error("Error copying link");
+      toast.error("Erro ao copiar link");
     });
   };
 
   const handleAddComment = async (contentId: string, commentText: string) => {
     if (!user) return;
     
+    toast.success('Comentário adicionado com sucesso!');
+    
+    // Atualizaria o estado local para simular adição do comentário
+    setContent(prevContent => 
+      prevContent.map(item => {
+        if (item.id === contentId) {
+          return {
+            ...item,
+            comments: [
+              ...item.comments,
+              {
+                id: `c${Date.now()}`,
+                content: commentText,
+                created_at: new Date().toISOString(),
+                user_id: user.id,
+                profiles: {
+                  owner_name: profile?.owner_name || 'Usuário',
+                  photo_url: profile?.photo_url
+                }
+              }
+            ]
+          };
+        }
+        return item;
+      })
+    );
+    
+    // Em uma implementação real, aqui enviaria ao Supabase
+    /*
     try {
       const { error } = await supabase
         .from('comments')
@@ -162,33 +199,9 @@ const Home = () => {
       
       if (error) throw error;
       
-      toast.success('Comment added successfully!');
-      
       // Refresh content
-      const { data: updatedContent } = await supabase
-        .from('content')
-        .select(`
-          *,
-          profiles:author_id(owner_name, photo_url),
-          comments:comments(
-            id,
-            content,
-            created_at,
-            user_id,
-            profiles:user_id(owner_name, photo_url),
-            likes
-          )
-        `)
-        .eq('published', true)
-        .order('created_at', { ascending: false });
-      
-      if (updatedContent) {
-        setContent(updatedContent);
-      }
-    } catch (error) {
-      console.error('Error adding comment:', error);
-      toast.error('Error adding comment');
-    }
+      const { data: updatedContent } = await supabase...
+    */
   };
 
   if (loading) {
@@ -213,10 +226,10 @@ const Home = () => {
             <div className="lg:w-2/3 space-y-8">
               <div className="glass-panel p-6 rounded-xl animate-fade-in">
                 <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">
-                  Welcome to <span className="text-outliers-blue">Outliers</span>
+                  Bem-vindo à <span className="text-outliers-blue">Outliers</span>
                 </h1>
                 <p className="text-gray-300">
-                  Connect with industry leaders and grow your professional network. Outliers is your platform for meaningful business connections and opportunities.
+                  Conecte-se com líderes do setor e amplie sua rede profissional. A Outliers é sua plataforma para conexões empresariais significativas e oportunidades.
                 </p>
               </div>
               
@@ -266,7 +279,7 @@ const Home = () => {
                           {item.type === 'live' && (
                             <div className="absolute top-3 left-3 bg-red-600 px-3 py-1 rounded-full text-sm text-white flex items-center">
                               <span className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></span>
-                              LIVE
+                              AO VIVO
                             </div>
                           )}
                         </div>
@@ -275,7 +288,7 @@ const Home = () => {
                       {item.type === 'live' && item.scheduled_for && (
                         <div className="flex items-center text-gray-300 mb-4">
                           <Users size={16} className="mr-2" />
-                          <span>Scheduled for {formatLocalDateTime(item.scheduled_for)}</span>
+                          <span>Agendado para {formatLocalDateTime(item.scheduled_for)}</span>
                         </div>
                       )}
                       
@@ -286,7 +299,7 @@ const Home = () => {
                             className="flex items-center text-gray-400 hover:text-outliers-blue transition-colors"
                           >
                             <ThumbsUp size={18} className="mr-1" />
-                            <span>Like</span>
+                            <span>Curtir</span>
                           </button>
                           
                           <button 
@@ -327,9 +340,9 @@ const Home = () => {
                 ))
               ) : (
                 <div className="glass-panel rounded-xl p-8 text-center">
-                  <h2 className="text-xl font-bold text-outliers-blue mb-4">No content available</h2>
+                  <h2 className="text-xl font-bold text-outliers-blue mb-4">Nenhum conteúdo disponível</h2>
                   <p className="text-gray-300 mb-4">
-                    There are no posts available at the moment. Come back soon for updates.
+                    Não há posts disponíveis no momento. Volte em breve para atualizações.
                   </p>
                 </div>
               )}
@@ -341,7 +354,7 @@ const Home = () => {
               <div className="glass-panel rounded-xl p-6 animate-fade-in">
                 <div className="flex items-center">
                   <div className="mr-4 relative">
-                    {profile.photo_url ? (
+                    {profile?.photo_url ? (
                       <div className="relative">
                         <img 
                           src={profile.photo_url} 
@@ -359,25 +372,25 @@ const Home = () => {
                     ) : (
                       <div className="w-16 h-16 rounded-full bg-outliers-gray flex items-center justify-center border-2 border-outliers-blue">
                         <span className="text-xl font-bold text-outliers-blue">
-                          {profile.owner_name.charAt(0)}
+                          {profile?.owner_name.charAt(0) || 'O'}
                         </span>
                       </div>
                     )}
                   </div>
                   <div>
                     <div className="flex items-center">
-                      <h3 className="font-bold text-white">{profile.owner_name}</h3>
-                      {profile.owner_name === "Outliersofc" && (
+                      <h3 className="font-bold text-white">{profile?.owner_name || 'Usuário'}</h3>
+                      {profile?.owner_name === "Outliersofc" && (
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1 text-outliers-blue" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
                       )}
                     </div>
-                    <p className="text-sm text-gray-400">{profile.business_name}</p>
+                    <p className="text-sm text-gray-400">{profile?.business_name || 'Empresa'}</p>
                   </div>
                 </div>
                 
-                {profile.bio && (
+                {profile?.bio && (
                   <p className="text-gray-300 mt-4 text-sm">
                     {profile.bio}
                   </p>
@@ -388,20 +401,20 @@ const Home = () => {
                     to="/create-content" 
                     className="w-full px-4 py-2 rounded-md border border-outliers-blue/50 text-outliers-blue hover:bg-outliers-blue/10 transition-colors text-sm flex items-center justify-center"
                   >
-                    <Loader2 size={16} className="mr-2" />
-                    Create Post
+                    <Plus size={16} className="mr-2" />
+                    Criar Post
                   </Link>
                 </div>
               </div>
               
               {/* About Outliers */}
               <div className="glass-panel rounded-xl p-6 animate-fade-in">
-                <h3 className="text-lg font-bold text-white mb-4">About Outliers</h3>
+                <h3 className="text-lg font-bold text-white mb-4">Sobre a Outliers</h3>
                 <p className="text-gray-300 text-sm mb-4">
-                  Outliers is a professional networking platform designed to connect forward-thinking entrepreneurs and business professionals.
+                  A Outliers é uma plataforma de networking profissional projetada para conectar empreendedores e profissionais de negócios visionários.
                 </p>
                 <p className="text-gray-300 text-sm">
-                  Our platform helps you build meaningful business relationships, discover opportunities, and grow your professional network.
+                  Nossa plataforma ajuda você a construir relacionamentos comerciais significativos, descobrir oportunidades e expandir sua rede profissional.
                 </p>
               </div>
             </div>

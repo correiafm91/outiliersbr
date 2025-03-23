@@ -50,12 +50,12 @@ const Register = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Store user data in localStorage (temporary solution)
-      localStorage.setItem('virtus-user', JSON.stringify({
+      localStorage.setItem('outliers-user', JSON.stringify({
         name: formData.name,
         email: formData.email,
         id: Date.now().toString(),
       }));
-      localStorage.setItem('virtus-token', 'mock-jwt-token');
+      localStorage.setItem('outliers-token', 'mock-jwt-token');
       
       toast.success("Registro concluído com sucesso!");
       navigate('/create-profile');
@@ -68,24 +68,24 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-virtus-black">
+    <div className="min-h-screen flex flex-col bg-outliers-dark">
       <Navbar />
       
       <div className="flex-1 flex items-center justify-center px-4 py-20">
         <div className="w-full max-w-md">
           <div className="mb-8">
-            <Link to="/" className="inline-flex items-center text-virtus-gold hover:underline mb-6">
+            <Link to="/" className="inline-flex items-center text-outliers-blue hover:underline mb-6">
               <ArrowLeft size={16} className="mr-2" />
               Voltar ao início
             </Link>
-            <h1 className="text-3xl font-bold text-virtus-offwhite mb-2">Crie sua conta</h1>
-            <p className="text-gray-400">Entre para a comunidade VIRTUS e transforme seu negócio</p>
+            <h1 className="text-3xl font-bold text-white mb-2">Crie sua conta</h1>
+            <p className="text-gray-400">Entre para a comunidade Outliers e transforme seu networking</p>
           </div>
           
           <div className="glass-panel rounded-lg p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label htmlFor="name" className="block text-sm font-medium text-virtus-offwhite">
+                <label htmlFor="name" className="block text-sm font-medium text-white">
                   Nome completo
                 </label>
                 <input
@@ -95,13 +95,13 @@ const Register = () => {
                   required
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-md input-dark transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-virtus-gold/50"
+                  className="w-full px-4 py-3 rounded-md input-dark transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-outliers-blue/50"
                   placeholder="Digite seu nome"
                 />
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="email" className="block text-sm font-medium text-virtus-offwhite">
+                <label htmlFor="email" className="block text-sm font-medium text-white">
                   E-mail
                 </label>
                 <input
@@ -111,13 +111,13 @@ const Register = () => {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-md input-dark transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-virtus-gold/50"
+                  className="w-full px-4 py-3 rounded-md input-dark transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-outliers-blue/50"
                   placeholder="seu@email.com"
                 />
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="password" className="block text-sm font-medium text-virtus-offwhite">
+                <label htmlFor="password" className="block text-sm font-medium text-white">
                   Senha
                 </label>
                 <div className="relative">
@@ -128,13 +128,13 @@ const Register = () => {
                     required
                     value={formData.password}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-md input-dark transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-virtus-gold/50"
+                    className="w-full px-4 py-3 rounded-md input-dark transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-outliers-blue/50"
                     placeholder="Crie uma senha"
                   />
                   <button 
                     type="button"
                     onClick={togglePasswordVisibility}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-virtus-gold"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-outliers-blue"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -142,7 +142,7 @@ const Register = () => {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-virtus-offwhite">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-white">
                   Confirme sua senha
                 </label>
                 <div className="relative">
@@ -153,7 +153,7 @@ const Register = () => {
                     required
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-md input-dark transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-virtus-gold/50"
+                    className="w-full px-4 py-3 rounded-md input-dark transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-outliers-blue/50"
                     placeholder="Confirme sua senha"
                   />
                 </div>
@@ -162,7 +162,7 @@ const Register = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full px-4 py-3 rounded-md btn-gold text-base font-medium flex items-center justify-center"
+                className="w-full px-4 py-3 rounded-md btn-blue text-base font-medium flex items-center justify-center"
               >
                 {loading ? (
                   <>
@@ -181,7 +181,7 @@ const Register = () => {
             <div className="mt-6 text-center">
               <p className="text-gray-400">
                 Já tem uma conta?{' '}
-                <Link to="/login" className="text-virtus-gold hover:underline">
+                <Link to="/login" className="text-outliers-blue hover:underline">
                   Faça login
                 </Link>
               </p>

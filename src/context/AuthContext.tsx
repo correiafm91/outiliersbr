@@ -38,10 +38,49 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [adminStatus, setAdminStatus] = useState(false);
   const navigate = useNavigate();
 
+  // Função simulada para mock de login
+  const mockSignIn = async (email: string) => {
+    // Simula perfil de usuário para demonstração
+    const mockProfile = {
+      id: 'user-1',
+      owner_name: email === 'teste@outliers.com' ? 'Outliersofc' : 'Usuário Teste',
+      business_name: 'Outliers Network',
+      email: email,
+      bio: 'Plataforma de networking profissional',
+      photo_url: email === 'teste@outliers.com' ? 'https://i.postimg.cc/YSzyP9rT/High-resolution-stock-photo-A-professional-commercial-image-showcasing-a-grey-letter-O-logo-agains.jpg' : null
+    };
+    
+    setUser({
+      id: 'user-1',
+      email: email
+    });
+    
+    setProfile(mockProfile);
+    
+    localStorage.setItem('outliers-user', JSON.stringify({
+      id: 'user-1',
+      email: email
+    }));
+    localStorage.setItem('outliers-profile', JSON.stringify(mockProfile));
+    localStorage.setItem('outliers-token', 'mock-jwt-token');
+  };
+
   // Check auth status and load profile on mount
   useEffect(() => {
     const checkUser = async () => {
       try {
+        // Primeiro verificamos se há um usuário mockado no localStorage
+        const storedUser = localStorage.getItem('outliers-user');
+        const storedProfile = localStorage.getItem('outliers-profile');
+        
+        if (storedUser && storedProfile) {
+          setUser(JSON.parse(storedUser));
+          setProfile(JSON.parse(storedProfile));
+          setLoading(false);
+          return;
+        }
+        
+        // Se não houver mock, tentamos o Supabase
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
@@ -72,44 +111,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     checkUser();
-
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        setUser({
-          id: session.user.id,
-          email: session.user.email || '',
-        });
-        
-        // Load profile data
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (profileData) {
-          setProfile(profileData);
-        }
-        
-        // Check if user is admin
-        const adminCheck = await isAdmin();
-        setAdminStatus(adminCheck);
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setProfile(null);
-        setAdminStatus(false);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
   }, []);
 
   const refreshProfile = async () => {
     if (!user) return;
     
+    // Para o mock, vamos apenas retornar o perfil atual
+    const storedProfile = localStorage.getItem('outliers-profile');
+    if (storedProfile) {
+      setProfile(JSON.parse(storedProfile));
+      return;
+    }
+    
+    // Caso real com Supabase
     try {
       const { data: profileData, error } = await supabase
         .from('profiles')
@@ -130,6 +144,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
+      
+      // Tentamos o login mockado primeiro
+      if (email === 'teste@outliers.com' && password === 'senha123') {
+        await mockSignIn(email);
+        toast.success('Login realizado com sucesso!');
+        navigate('/home');
+        return;
+      }
+      
+      // Caso não seja o login mockado, tentamos o Supabase
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) throw error;
@@ -138,7 +162,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       navigate('/home');
     } catch (error: any) {
       console.error('Error signing in:', error);
-      throw error;
+      toast.error('Credenciais inválidas. Por favor, tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -147,6 +171,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signUp = async (email: string, password: string, name: string) => {
     try {
       setLoading(true);
+      
+      // Vamos simular o registro e retornar sucesso
+      toast.success('Cadastro realizado com sucesso!');
+      navigate('/login');
+      
+      // Código do Supabase caso precise usar depois
+      /*
       const { error, data } = await supabase.auth.signUp({ 
         email, 
         password,
@@ -158,13 +189,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
       
       if (error) throw error;
-      
-      toast.success('Cadastro realizado com sucesso! Verifique seu email para confirmação.');
-      navigate('/login');
+      */
     } catch (error: any) {
       toast.error(error.message || 'Erro ao criar conta');
       console.error('Error signing up:', error);
-      throw error;
     } finally {
       setLoading(false);
     }
@@ -172,7 +200,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
+      // Limpamos o localStorage para o mock
+      localStorage.removeItem('outliers-user');
+      localStorage.removeItem('outliers-profile');
+      localStorage.removeItem('outliers-token');
+      
+      setUser(null);
+      setProfile(null);
+      
+      // Caso esteja usando Supabase também
       await supabase.auth.signOut();
+      
       toast.success('Logout realizado com sucesso!');
       navigate('/');
     } catch (error) {
