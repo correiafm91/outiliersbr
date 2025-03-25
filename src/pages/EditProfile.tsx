@@ -20,9 +20,9 @@ import {
 import Navbar from '@/components/Navbar';
 
 const formSchema = z.object({
-  businessName: z.string().min(1, 'Nome do negócio é obrigatório'),
-  ownerName: z.string().min(1, 'Seu nome é obrigatório'),
-  email: z.string().email('Email inválido'),
+  businessName: z.string().min(1, 'Business name is required'),
+  ownerName: z.string().min(1, 'Your name is required'),
+  email: z.string().email('Invalid email'),
   bio: z.string().optional(),
 });
 
@@ -51,36 +51,38 @@ const EditProfile = () => {
     }
     
     // Check if profile exists
-    if (!profile) {
+    if (!profile && !loading) {
       navigate('/create-profile');
       return;
     }
     
     // Pre-fill form with profile data
-    form.reset({
-      businessName: profile.business_name,
-      ownerName: profile.owner_name,
-      email: profile.email,
-      bio: profile.bio || '',
-    });
-    
-    // Load photo if exists
-    if (profile.photo_url) {
-      setPhotoPreview(profile.photo_url);
+    if (profile) {
+      form.reset({
+        businessName: profile.business_name || '',
+        ownerName: profile.owner_name || '',
+        email: profile.email || '',
+        bio: profile.bio || '',
+      });
+      
+      // Load photo if exists
+      if (profile.photo_url) {
+        setPhotoPreview(profile.photo_url);
+      }
     }
-  }, [user, profile, navigate, form]);
+  }, [user, profile, loading, navigate, form]);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("A imagem deve ter menos de 5MB");
+      toast.error("Image must be less than 5MB");
       return;
     }
     
     if (!file.type.startsWith('image/')) {
-      toast.error("O arquivo deve ser uma imagem");
+      toast.error("File must be an image");
       return;
     }
     
@@ -110,14 +112,14 @@ const EditProfile = () => {
       if (photoFile) {
         const fileName = `profile-${user.id}-${Date.now()}`;
         const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('virtus')
+          .from('outliers')
           .upload(`profiles/${fileName}`, photoFile);
         
         if (uploadError) throw uploadError;
         
         if (uploadData) {
           const { data: urlData } = supabase.storage
-            .from('virtus')
+            .from('outliers')
             .getPublicUrl(`profiles/${fileName}`);
           
           photoUrl = urlData.publicUrl;
@@ -145,33 +147,33 @@ const EditProfile = () => {
       // Refresh profile data in context
       await refreshProfile();
       
-      toast.success('Perfil atualizado com sucesso!');
+      toast.success('Profile updated successfully!');
       navigate('/home');
     } catch (error: any) {
       console.error('Error updating profile:', error);
-      toast.error(error.message || 'Erro ao atualizar perfil');
+      toast.error(error.message || 'Error updating profile');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-virtus-black">
+    <div className="min-h-screen flex flex-col bg-outliers-dark">
       <Navbar />
       
       <div className="flex-1 flex items-center justify-center px-4 py-20">
         <div className="w-full max-w-2xl">
           <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold text-virtus-offwhite mb-2">Editar Perfil</h1>
-            <p className="text-gray-400">Atualize as informações do seu perfil na VIRTUS Community</p>
+            <h1 className="text-3xl font-bold text-white mb-2">Edit Profile</h1>
+            <p className="text-gray-400">Update your profile information in the Outliers Community</p>
           </div>
           
           <div className="glass-panel rounded-lg p-8">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="space-y-4">
-                  <FormLabel className="block text-sm font-medium text-virtus-offwhite">
-                    Foto de perfil
+                  <FormLabel className="block text-sm font-medium text-white">
+                    Profile picture
                   </FormLabel>
                   <div className="flex flex-col items-center">
                     <div className="relative mb-4">
@@ -180,18 +182,18 @@ const EditProfile = () => {
                           <img
                             src={photoPreview}
                             alt="Preview"
-                            className="w-32 h-32 rounded-full object-cover border-2 border-virtus-gold"
+                            className="w-32 h-32 rounded-full object-cover border-2 border-outliers-blue"
                           />
                           <button
                             type="button"
                             onClick={removePhoto}
-                            className="absolute -top-2 -right-2 bg-virtus-darkgray rounded-full p-1 text-red-500 hover:text-red-600"
+                            className="absolute -top-2 -right-2 bg-outliers-dark rounded-full p-1 text-red-500 hover:text-red-600"
                           >
                             <X size={16} />
                           </button>
                         </div>
                       ) : (
-                        <div className="w-32 h-32 rounded-full bg-virtus-darkgray border-2 border-dashed border-gray-500 flex items-center justify-center">
+                        <div className="w-32 h-32 rounded-full bg-outliers-gray border-2 border-dashed border-gray-500 flex items-center justify-center">
                           <Upload size={32} className="text-gray-400" />
                         </div>
                       )}
@@ -199,10 +201,10 @@ const EditProfile = () => {
                     
                     <label 
                       htmlFor="photo-upload" 
-                      className="px-4 py-2 rounded-md border border-virtus-gold/50 text-virtus-gold bg-transparent hover:bg-virtus-gold/10 transition-colors text-sm font-medium cursor-pointer flex items-center"
+                      className="px-4 py-2 rounded-md border border-outliers-blue/50 text-outliers-blue bg-transparent hover:bg-outliers-blue/10 transition-colors text-sm font-medium cursor-pointer flex items-center"
                     >
                       <Upload size={16} className="mr-2" />
-                      {photoPreview ? 'Alterar foto' : 'Escolher foto'}
+                      {photoPreview ? 'Change picture' : 'Choose picture'}
                     </label>
                     <input 
                       id="photo-upload" 
@@ -212,7 +214,7 @@ const EditProfile = () => {
                       className="hidden" 
                     />
                     <p className="text-xs text-gray-400 mt-2">
-                      A foto deve ter no máximo 5MB (Opcional)
+                      Maximum image size: 5MB (Optional)
                     </p>
                   </div>
                 </div>
@@ -222,14 +224,14 @@ const EditProfile = () => {
                   name="businessName"
                   render={({ field }) => (
                     <FormItem className="space-y-2">
-                      <FormLabel className="text-virtus-offwhite">
-                        Nome do seu negócio <span className="text-virtus-gold">*</span>
+                      <FormLabel className="text-white">
+                        Business name <span className="text-outliers-blue">*</span>
                       </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
                           className="input-dark"
-                          placeholder="Ex: Virtus Empreendimentos"
+                          placeholder="Ex: Outliers Enterprises"
                         />
                       </FormControl>
                       <FormMessage />
@@ -242,14 +244,14 @@ const EditProfile = () => {
                   name="ownerName"
                   render={({ field }) => (
                     <FormItem className="space-y-2">
-                      <FormLabel className="text-virtus-offwhite">
-                        Seu nome <span className="text-virtus-gold">*</span>
+                      <FormLabel className="text-white">
+                        Your name <span className="text-outliers-blue">*</span>
                       </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
                           className="input-dark"
-                          placeholder="Seu nome completo"
+                          placeholder="Your full name"
                         />
                       </FormControl>
                       <FormMessage />
@@ -262,15 +264,15 @@ const EditProfile = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem className="space-y-2">
-                      <FormLabel className="text-virtus-offwhite">
-                        E-mail profissional <span className="text-virtus-gold">*</span>
+                      <FormLabel className="text-white">
+                        Professional email <span className="text-outliers-blue">*</span>
                       </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
                           type="email"
                           className="input-dark"
-                          placeholder="seu@empresa.com"
+                          placeholder="your@company.com"
                         />
                       </FormControl>
                       <FormMessage />
@@ -283,15 +285,15 @@ const EditProfile = () => {
                   name="bio"
                   render={({ field }) => (
                     <FormItem className="space-y-2">
-                      <FormLabel className="text-virtus-offwhite">
-                        Sobre você e seu negócio (opcional)
+                      <FormLabel className="text-white">
+                        About you and your business (optional)
                       </FormLabel>
                       <FormControl>
                         <textarea
                           {...field}
                           rows={4}
-                          className="w-full px-4 py-3 rounded-md input-dark transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-virtus-gold/50"
-                          placeholder="Conte um pouco sobre você e seu negócio..."
+                          className="w-full px-4 py-3 rounded-md input-dark transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-outliers-blue/50"
+                          placeholder="Tell us about you and your business..."
                         />
                       </FormControl>
                       <FormMessage />
@@ -303,23 +305,23 @@ const EditProfile = () => {
                   <button
                     type="button"
                     onClick={() => navigate('/home')}
-                    className="px-6 py-3 rounded-md border border-virtus-gold/50 text-virtus-gold bg-transparent hover:bg-virtus-gold/10 transition-colors text-base font-medium"
+                    className="px-6 py-3 rounded-md border border-outliers-blue/50 text-outliers-blue bg-transparent hover:bg-outliers-blue/10 transition-colors text-base font-medium"
                   >
-                    Cancelar
+                    Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-6 py-3 rounded-md btn-gold text-base font-medium flex items-center"
+                    className="px-6 py-3 rounded-md btn-blue text-base font-medium flex items-center"
                   >
                     {loading ? (
                       <>
                         <Loader2 size={18} className="animate-spin mr-2" />
-                        Salvando...
+                        Saving...
                       </>
                     ) : (
                       <>
-                        Salvar Alterações
+                        Save Changes
                         <ArrowRight size={18} className="ml-2" />
                       </>
                     )}

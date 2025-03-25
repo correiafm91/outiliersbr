@@ -9,7 +9,13 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: {
+    storage: localStorage,
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+});
 
 // Helper for checking if user is admin
 export const isAdmin = async () => {
@@ -54,3 +60,32 @@ export const getStorageUrl = (path: string): string => {
   // Default case, just prepend the URL to the outliers bucket path
   return `${SUPABASE_URL}/storage/v1/object/public/outliers/${path}`;
 };
+
+// Create storage buckets if they don't exist
+export const createBucketsIfNotExist = async () => {
+  try {
+    // Check if the outliers bucket exists
+    const { data: buckets } = await supabase.storage.listBuckets();
+    
+    if (!buckets?.find(bucket => bucket.name === 'outliers')) {
+      await supabase.storage.createBucket('outliers', {
+        public: true,
+        fileSizeLimit: 5 * 1024 * 1024, // 5MB
+      });
+      console.log('Created outliers bucket');
+    }
+    
+    if (!buckets?.find(bucket => bucket.name === 'virtus')) {
+      await supabase.storage.createBucket('virtus', {
+        public: true,
+        fileSizeLimit: 5 * 1024 * 1024, // 5MB
+      });
+      console.log('Created virtus bucket');
+    }
+  } catch (error) {
+    console.error('Error creating buckets:', error);
+  }
+};
+
+// Check for buckets when the app initializes
+createBucketsIfNotExist();

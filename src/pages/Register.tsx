@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
@@ -47,13 +48,12 @@ const Register = () => {
     }
 
     try {
-      // Sign up with auto sign-in
+      // Sign up with Supabase
       await signUp(formData.email, formData.password, formData.name);
-      // Navigate is handled by AuthContext after successful signup
+      // Navigation is handled in the AuthContext
     } catch (error) {
       console.error("Registration error:", error);
       toast.error("Error during registration. Please try again.");
-    } finally {
       setLoading(false);
     }
   };

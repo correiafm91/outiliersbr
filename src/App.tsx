@@ -9,6 +9,8 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
+import CreateProfile from "./pages/CreateProfile";
+import EditProfile from "./pages/EditProfile";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +26,8 @@ const App = () => (
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
             <Route path="/home" element={<Home />} />
+            <Route path="/create-profile" element={<CreateProfile />} />
+            <Route path="/edit-profile" element={<EditProfile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </TooltipProvider>

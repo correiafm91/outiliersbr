@@ -20,9 +20,9 @@ import {
 import Navbar from '@/components/Navbar';
 
 const formSchema = z.object({
-  businessName: z.string().min(1, 'Nome do negócio é obrigatório'),
-  ownerName: z.string().min(1, 'Seu nome é obrigatório'),
-  email: z.string().email('Email inválido'),
+  businessName: z.string().min(1, 'Business name is required'),
+  ownerName: z.string().min(1, 'Your name is required'),
+  email: z.string().email('Invalid email'),
   bio: z.string().optional(),
 });
 
@@ -33,8 +33,6 @@ const CreateProfile = () => {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
-  const [currentImage, setCurrentImage] = useState<string | null>(null);
-  const [cropMode, setCropMode] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -71,12 +69,12 @@ const CreateProfile = () => {
     if (!file) return;
     
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("A imagem deve ter menos de 5MB");
+      toast.error("Image must be less than 5MB");
       return;
     }
     
     if (!file.type.startsWith('image/')) {
-      toast.error("O arquivo deve ser uma imagem");
+      toast.error("File must be an image");
       return;
     }
     
@@ -85,7 +83,6 @@ const CreateProfile = () => {
     const reader = new FileReader();
     reader.onload = () => {
       setPhotoPreview(reader.result as string);
-      setCurrentImage(reader.result as string);
     };
     reader.readAsDataURL(file);
   };
@@ -93,18 +90,6 @@ const CreateProfile = () => {
   const removePhoto = () => {
     setPhotoPreview(null);
     setPhotoFile(null);
-    setCurrentImage(null);
-    setCropMode(false);
-  };
-
-  const toggleCropMode = () => {
-    setCropMode(!cropMode);
-  };
-
-  const handleImageAdjust = (adjustment: 'contrast' | 'brightness') => {
-    // Simple image adjustment simulation
-    // In a real app, you would use a library like react-image-crop
-    toast.info(`Ajuste de ${adjustment === 'contrast' ? 'contraste' : 'brilho'} aplicado`);
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -143,6 +128,8 @@ const CreateProfile = () => {
           email: values.email,
           bio: values.bio || null,
           photo_url: photoUrl,
+          updated_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         });
       
       if (error) throw error;
@@ -150,11 +137,11 @@ const CreateProfile = () => {
       // Refresh profile data in context
       await refreshProfile();
       
-      toast.success('Perfil criado com sucesso!');
+      toast.success('Profile created successfully!');
       navigate('/home');
     } catch (error: any) {
       console.error('Error creating profile:', error);
-      toast.error(error.message || 'Erro ao criar perfil');
+      toast.error(error.message || 'Error creating profile');
     } finally {
       setLoading(false);
     }
@@ -167,8 +154,8 @@ const CreateProfile = () => {
       <div className="flex-1 flex items-center justify-center px-4 py-20">
         <div className="w-full max-w-2xl">
           <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold text-white mb-2">Complete seu perfil</h1>
-            <p className="text-gray-400">Configure seu perfil para começar sua jornada na comunidade Outliers</p>
+            <h1 className="text-3xl font-bold text-white mb-2">Complete your profile</h1>
+            <p className="text-gray-400">Set up your profile to start your journey in the Outliers community</p>
           </div>
           
           <div className="glass-panel rounded-lg p-8">
@@ -180,13 +167,13 @@ const CreateProfile = () => {
                   render={({ field }) => (
                     <FormItem className="space-y-2">
                       <FormLabel className="text-white">
-                        Nome do seu negócio <span className="text-outliers-blue">*</span>
+                        Business name <span className="text-outliers-blue">*</span>
                       </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
                           className="input-dark"
-                          placeholder="Ex: Outliers Empreendimentos"
+                          placeholder="Ex: Outliers Enterprises"
                         />
                       </FormControl>
                       <FormMessage />
@@ -200,18 +187,18 @@ const CreateProfile = () => {
                   render={({ field }) => (
                     <FormItem className="space-y-2">
                       <FormLabel className="text-white">
-                        Seu nome <span className="text-outliers-blue">*</span>
+                        Your name <span className="text-outliers-blue">*</span>
                       </FormLabel>
                       <div className="flex items-center">
                         <FormControl>
                           <Input
                             {...field}
                             className="input-dark"
-                            placeholder="Seu nome completo"
+                            placeholder="Your full name"
                           />
                         </FormControl>
                         {isVerified && (
-                          <div className="ml-2 flex-shrink-0 bg-outliers-blue rounded-full p-1" title="Perfil Verificado">
+                          <div className="ml-2 flex-shrink-0 bg-outliers-blue rounded-full p-1" title="Verified Profile">
                             <Check className="h-4 w-4 text-white" />
                           </div>
                         )}
@@ -227,14 +214,14 @@ const CreateProfile = () => {
                   render={({ field }) => (
                     <FormItem className="space-y-2">
                       <FormLabel className="text-white">
-                        E-mail profissional <span className="text-outliers-blue">*</span>
+                        Professional email <span className="text-outliers-blue">*</span>
                       </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
                           type="email"
                           className="input-dark"
-                          placeholder="seu@empresa.com"
+                          placeholder="your@company.com"
                         />
                       </FormControl>
                       <FormMessage />
@@ -244,7 +231,7 @@ const CreateProfile = () => {
 
                 <div className="space-y-4">
                   <FormLabel className="block text-sm font-medium text-white">
-                    Foto de perfil
+                    Profile picture
                   </FormLabel>
                   <div className="flex flex-col items-center">
                     <div className="relative mb-4">
@@ -276,7 +263,7 @@ const CreateProfile = () => {
                         className="px-4 py-2 rounded-md border border-outliers-blue/50 text-outliers-blue bg-transparent hover:bg-outliers-blue/10 transition-colors text-sm font-medium cursor-pointer flex items-center"
                       >
                         <Upload size={16} className="mr-2" />
-                        {photoPreview ? 'Alterar foto' : 'Escolher foto'}
+                        {photoPreview ? 'Change picture' : 'Choose picture'}
                       </label>
                       <input 
                         id="photo-upload" 
@@ -285,42 +272,10 @@ const CreateProfile = () => {
                         onChange={handlePhotoUpload} 
                         className="hidden" 
                       />
-                      
-                      {photoPreview && (
-                        <button
-                          type="button"
-                          onClick={toggleCropMode}
-                          className="px-4 py-2 rounded-md border border-outliers-blue/50 text-outliers-blue bg-transparent hover:bg-outliers-blue/10 transition-colors text-sm font-medium"
-                        >
-                          {cropMode ? 'Aplicar corte' : 'Cortar imagem'}
-                        </button>
-                      )}
                     </div>
                     
-                    {photoPreview && cropMode && (
-                      <div className="mt-4 space-y-2">
-                        <p className="text-sm text-white">Ajustes de imagem</p>
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleImageAdjust('contrast')}
-                            className="px-4 py-2 rounded-md bg-outliers-gray/70 text-white text-sm"
-                          >
-                            + Contraste
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleImageAdjust('brightness')}
-                            className="px-4 py-2 rounded-md bg-outliers-gray/70 text-white text-sm"
-                          >
-                            + Brilho
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                    
                     <p className="text-xs text-gray-400 mt-2">
-                      A foto deve ter no máximo 5MB (Opcional)
+                      Maximum image size: 5MB (Optional)
                     </p>
                   </div>
                 </div>
@@ -331,14 +286,14 @@ const CreateProfile = () => {
                   render={({ field }) => (
                     <FormItem className="space-y-2">
                       <FormLabel className="text-white">
-                        Sobre você e seu negócio (opcional)
+                        About you and your business (optional)
                       </FormLabel>
                       <FormControl>
                         <textarea
                           {...field}
                           rows={4}
                           className="w-full px-4 py-3 rounded-md input-dark transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-outliers-blue/50"
-                          placeholder="Conte um pouco sobre você e seu negócio..."
+                          placeholder="Tell us about you and your business..."
                         />
                       </FormControl>
                       <FormMessage />
@@ -355,11 +310,11 @@ const CreateProfile = () => {
                     {loading ? (
                       <>
                         <Loader2 size={18} className="animate-spin mr-2" />
-                        Processando...
+                        Processing...
                       </>
                     ) : (
                       <>
-                        Concluir
+                        Complete
                         <ArrowRight size={18} className="ml-2" />
                       </>
                     )}

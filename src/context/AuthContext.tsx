@@ -72,23 +72,51 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          if (session?.user) {
+            setUser({
+              id: session.user.id,
+              email: session.user.email || '',
+            });
+            await refreshProfile(session.user.id);
+          }
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setProfile(null);
+        }
+      }
+    );
+
     checkUser();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const refreshProfile = async () => {
-    if (!user) return;
+  const refreshProfile = async (userId?: string) => {
+    const id = userId || user?.id;
+    if (!id) return;
     
     try {
       const { data: profileData, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
-        .single();
+        .eq('id', id)
+        .maybeSingle();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
       
       if (profileData) {
         setProfile(profileData);
+      } else {
+        setProfile(null);
       }
     } catch (error) {
       console.error('Error refreshing profile:', error);
@@ -113,7 +141,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           email: updatedUser.email || '',
         });
         
-        await refreshProfile();
+        await refreshProfile(updatedUser.id);
       }
       
       toast.success('Login successful!');
@@ -143,31 +171,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (error) throw error;
       
-      // Create profile after successful registration
+      // Set user state - we don't need to create a profile here
+      // as we'll redirect to the create-profile page
       if (data.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            owner_name: name,
-            business_name: '',
-            email: email,
-          });
-          
-        if (profileError) throw profileError;
-        
-        // Set user state
         setUser({
           id: data.user.id,
           email: data.user.email || '',
         });
-        
-        // Get and set profile
-        await refreshProfile();
       }
       
-      toast.success('Registration successful!');
-      navigate('/home');
+      toast.success('Registration successful! Please complete your profile.');
+      navigate('/create-profile');
     } catch (error: any) {
       toast.error(error.message || 'Error creating account');
       console.error('Error signing up:', error);
@@ -184,7 +198,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setProfile(null);
       
       toast.success('Logout successful!');
-      navigate('/');
+      navigate('/login');
     } catch (error) {
       console.error('Error signing out:', error);
       toast.error('Error during logout');
@@ -199,7 +213,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signIn,
     signUp,
     signOut,
-    refreshProfile,
+    refreshProfile: () => refreshProfile(),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
