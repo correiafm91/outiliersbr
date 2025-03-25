@@ -38,49 +38,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [adminStatus, setAdminStatus] = useState(false);
   const navigate = useNavigate();
 
-  // Função simulada para mock de login
-  const mockSignIn = async (email: string) => {
-    // Simula perfil de usuário para demonstração
-    const mockProfile = {
-      id: 'user-1',
-      owner_name: email === 'teste@outliers.com' ? 'Outliersofc' : 'Usuário Teste',
-      business_name: 'Outliers Network',
-      email: email,
-      bio: 'Plataforma de networking profissional',
-      photo_url: email === 'teste@outliers.com' ? 'https://i.postimg.cc/YSzyP9rT/High-resolution-stock-photo-A-professional-commercial-image-showcasing-a-grey-letter-O-logo-agains.jpg' : null
-    };
-    
-    setUser({
-      id: 'user-1',
-      email: email
-    });
-    
-    setProfile(mockProfile);
-    
-    localStorage.setItem('outliers-user', JSON.stringify({
-      id: 'user-1',
-      email: email
-    }));
-    localStorage.setItem('outliers-profile', JSON.stringify(mockProfile));
-    localStorage.setItem('outliers-token', 'mock-jwt-token');
-  };
-
   // Check auth status and load profile on mount
   useEffect(() => {
     const checkUser = async () => {
       try {
-        // Primeiro verificamos se há um usuário mockado no localStorage
-        const storedUser = localStorage.getItem('outliers-user');
-        const storedProfile = localStorage.getItem('outliers-profile');
-        
-        if (storedUser && storedProfile) {
-          setUser(JSON.parse(storedUser));
-          setProfile(JSON.parse(storedProfile));
-          setLoading(false);
-          return;
-        }
-        
-        // Se não houver mock, tentamos o Supabase
+        // Get user from Supabase
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
@@ -116,14 +78,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const refreshProfile = async () => {
     if (!user) return;
     
-    // Para o mock, vamos apenas retornar o perfil atual
-    const storedProfile = localStorage.getItem('outliers-profile');
-    if (storedProfile) {
-      setProfile(JSON.parse(storedProfile));
-      return;
-    }
-    
-    // Caso real com Supabase
     try {
       const { data: profileData, error } = await supabase
         .from('profiles')
@@ -145,24 +99,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setLoading(true);
       
-      // Tentamos o login mockado primeiro
-      if (email === 'teste@outliers.com' && password === 'senha123') {
-        await mockSignIn(email);
-        toast.success('Login realizado com sucesso!');
-        navigate('/home');
-        return;
-      }
-      
-      // Caso não seja o login mockado, tentamos o Supabase
+      // Real Supabase authentication
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) throw error;
       
-      toast.success('Login realizado com sucesso!');
+      // Get updated user and profile data
+      const { data: { user: updatedUser } } = await supabase.auth.getUser();
+      
+      if (updatedUser) {
+        setUser({
+          id: updatedUser.id,
+          email: updatedUser.email || '',
+        });
+        
+        await refreshProfile();
+      }
+      
+      toast.success('Login successful!');
       navigate('/home');
     } catch (error: any) {
       console.error('Error signing in:', error);
-      throw new Error('Credenciais inválidas. Por favor, tente novamente.');
+      throw new Error('Invalid credentials. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -172,12 +130,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setLoading(true);
       
-      // Vamos simular o registro e retornar sucesso
-      toast.success('Cadastro realizado com sucesso!');
-      navigate('/login');
-      
-      // Código do Supabase caso precise usar depois
-      /*
+      // Real Supabase registration
       const { error, data } = await supabase.auth.signUp({ 
         email, 
         password,
@@ -189,9 +142,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
       
       if (error) throw error;
-      */
+      
+      // Create profile after successful registration
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: data.user.id,
+            owner_name: name,
+            business_name: '',
+            email: email,
+          });
+          
+        if (profileError) throw profileError;
+        
+        // Set user state
+        setUser({
+          id: data.user.id,
+          email: data.user.email || '',
+        });
+        
+        // Get and set profile
+        await refreshProfile();
+      }
+      
+      toast.success('Registration successful!');
+      navigate('/home');
     } catch (error: any) {
-      toast.error(error.message || 'Erro ao criar conta');
+      toast.error(error.message || 'Error creating account');
       console.error('Error signing up:', error);
     } finally {
       setLoading(false);
@@ -200,22 +178,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
-      // Limpamos o localStorage para o mock
-      localStorage.removeItem('outliers-user');
-      localStorage.removeItem('outliers-profile');
-      localStorage.removeItem('outliers-token');
+      await supabase.auth.signOut();
       
       setUser(null);
       setProfile(null);
       
-      // Caso esteja usando Supabase também
-      await supabase.auth.signOut();
-      
-      toast.success('Logout realizado com sucesso!');
+      toast.success('Logout successful!');
       navigate('/');
     } catch (error) {
       console.error('Error signing out:', error);
-      toast.error('Erro ao fazer logout');
+      toast.error('Error during logout');
     }
   };
 

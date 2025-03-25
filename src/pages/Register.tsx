@@ -1,12 +1,13 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
 import { toast } from "sonner";
+import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 
 const Register = () => {
   const navigate = useNavigate();
+  const { signUp } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -46,19 +47,9 @@ const Register = () => {
     }
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Store user data in localStorage (temporary solution)
-      localStorage.setItem('outliers-user', JSON.stringify({
-        name: formData.name,
-        email: formData.email,
-        id: Date.now().toString(),
-      }));
-      localStorage.setItem('outliers-token', 'mock-jwt-token');
-      
-      toast.success("Registration completed successfully!");
-      navigate('/login');
+      // Sign up with auto sign-in
+      await signUp(formData.email, formData.password, formData.name);
+      // Navigate is handled by AuthContext after successful signup
     } catch (error) {
       console.error("Registration error:", error);
       toast.error("Error during registration. Please try again.");
