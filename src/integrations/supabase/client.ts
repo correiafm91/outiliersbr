@@ -40,8 +40,17 @@ export const formatLocalDateTime = (dateString: string): string => {
   }).format(date);
 };
 
-// Utilitário para verificar se a URL de arquivo está nos buckets do Supabase
+// Utility to check if a file URL is in the Supabase buckets
 export const getStorageUrl = (path: string): string => {
   if (!path || path.startsWith('http')) return path;
+  
+  // Make sure we're checking for both virtus and outliers buckets
+  if (path.includes('/virtus/')) {
+    return `${SUPABASE_URL}/storage/v1/object/public/virtus/${path.split('/virtus/')[1]}`;
+  } else if (path.includes('/outliers/')) {
+    return `${SUPABASE_URL}/storage/v1/object/public/outliers/${path.split('/outliers/')[1]}`;
+  }
+  
+  // Default case, just prepend the URL to the outliers bucket path
   return `${SUPABASE_URL}/storage/v1/object/public/outliers/${path}`;
 };
