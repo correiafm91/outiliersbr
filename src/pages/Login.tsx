@@ -19,8 +19,8 @@ import { useAuth } from '@/context/AuthContext';
 import Navbar from '../components/Navbar';
 
 const formSchema = z.object({
-  email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres'),
+  email: z.string().email('Invalid email'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
 const Login = () => {
@@ -29,7 +29,7 @@ const Login = () => {
   const [loginError, setLoginError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Se já estiver logado, redirecionar para home
+  // If already logged in, redirect to home
   useEffect(() => {
     if (user) {
       navigate('/home');
@@ -52,7 +52,7 @@ const Login = () => {
       await signIn(values.email, values.password);
       // Navigate is handled in the useEffect when user state changes
     } catch (error: any) {
-      setLoginError('Erro ao fazer login. Verifique suas credenciais.');
+      setLoginError('Login error. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -65,8 +65,8 @@ const Login = () => {
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Bem-vindo de volta</h1>
-            <p className="text-gray-400">Entre na sua conta para acessar a comunidade Outliers</p>
+            <h1 className="text-3xl font-bold text-white mb-2">Welcome back</h1>
+            <p className="text-gray-400">Sign in to your account to access the Outliers community</p>
           </div>
           
           {loginError && (
@@ -87,7 +87,7 @@ const Login = () => {
                       <FormLabel className="text-white">Email</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="seu@email.com" 
+                          placeholder="your@email.com" 
                           className="input-dark transition-all duration-300 focus:ring-2 focus:ring-outliers-blue/50" 
                           {...field} 
                         />
@@ -103,9 +103,9 @@ const Login = () => {
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex justify-between items-center">
-                        <FormLabel className="text-white">Senha</FormLabel>
+                        <FormLabel className="text-white">Password</FormLabel>
                         <Link to="/forgot-password" className="text-xs text-outliers-blue hover:underline">
-                          Esqueceu a senha?
+                          Forgot password?
                         </Link>
                       </div>
                       <FormControl>
@@ -122,9 +122,9 @@ const Login = () => {
                 />
                 
                 <div className="pt-2 text-sm text-gray-400">
-                  <p>Credenciais de demonstração:</p>
+                  <p>Demo credentials:</p>
                   <p>Email: teste@outliers.com</p>
-                  <p>Senha: senha123</p>
+                  <p>Password: senha123</p>
                 </div>
                 
                 <button
@@ -135,16 +135,16 @@ const Login = () => {
                   {loading || authLoading ? (
                     <>
                       <Loader2 size={18} className="animate-spin mr-2" />
-                      Entrando...
+                      Signing in...
                     </>
-                  ) : 'Entrar'}
+                  ) : 'Sign in'}
                 </button>
 
                 <div className="text-center pt-4">
                   <p className="text-gray-400 text-sm">
-                    Ainda não tem uma conta?{' '}
+                    Don't have an account yet?{' '}
                     <Link to="/register" className="text-outliers-blue hover:underline">
-                      Cadastre-se
+                      Sign up
                     </Link>
                   </p>
                 </div>

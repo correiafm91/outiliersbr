@@ -34,13 +34,13 @@ const Register = () => {
 
     // Validation
     if (formData.password !== formData.confirmPassword) {
-      toast.error("As senhas não coincidem");
+      toast.error("Passwords don't match");
       setLoading(false);
       return;
     }
 
     if (formData.password.length < 6) {
-      toast.error("A senha deve ter pelo menos 6 caracteres");
+      toast.error("Password must be at least 6 characters");
       setLoading(false);
       return;
     }
@@ -57,11 +57,11 @@ const Register = () => {
       }));
       localStorage.setItem('outliers-token', 'mock-jwt-token');
       
-      toast.success("Registro concluído com sucesso!");
-      navigate('/create-profile');
+      toast.success("Registration completed successfully!");
+      navigate('/login');
     } catch (error) {
       console.error("Registration error:", error);
-      toast.error("Erro ao registrar. Por favor, tente novamente.");
+      toast.error("Error during registration. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -74,19 +74,19 @@ const Register = () => {
       <div className="flex-1 flex items-center justify-center px-4 py-20">
         <div className="w-full max-w-md">
           <div className="mb-8">
-            <Link to="/" className="inline-flex items-center text-outliers-blue hover:underline mb-6">
+            <Link to="/login" className="inline-flex items-center text-outliers-blue hover:underline mb-6">
               <ArrowLeft size={16} className="mr-2" />
-              Voltar ao início
+              Back to login
             </Link>
-            <h1 className="text-3xl font-bold text-white mb-2">Crie sua conta</h1>
-            <p className="text-gray-400">Entre para a comunidade Outliers e transforme seu networking</p>
+            <h1 className="text-3xl font-bold text-white mb-2">Create your account</h1>
+            <p className="text-gray-400">Join the Outliers community and transform your networking</p>
           </div>
           
           <div className="glass-panel rounded-lg p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <label htmlFor="name" className="block text-sm font-medium text-white">
-                  Nome completo
+                  Full name
                 </label>
                 <input
                   id="name"
@@ -96,13 +96,13 @@ const Register = () => {
                   value={formData.name}
                   onChange={handleChange}
                   className="w-full px-4 py-3 rounded-md input-dark transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-outliers-blue/50"
-                  placeholder="Digite seu nome"
+                  placeholder="Enter your name"
                 />
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="email" className="block text-sm font-medium text-white">
-                  E-mail
+                  Email
                 </label>
                 <input
                   id="email"
@@ -112,13 +112,13 @@ const Register = () => {
                   value={formData.email}
                   onChange={handleChange}
                   className="w-full px-4 py-3 rounded-md input-dark transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-outliers-blue/50"
-                  placeholder="seu@email.com"
+                  placeholder="your@email.com"
                 />
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="password" className="block text-sm font-medium text-white">
-                  Senha
+                  Password
                 </label>
                 <div className="relative">
                   <input
@@ -129,7 +129,7 @@ const Register = () => {
                     value={formData.password}
                     onChange={handleChange}
                     className="w-full px-4 py-3 rounded-md input-dark transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-outliers-blue/50"
-                    placeholder="Crie uma senha"
+                    placeholder="Create a password"
                   />
                   <button 
                     type="button"
@@ -143,7 +143,7 @@ const Register = () => {
 
               <div className="space-y-2">
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-white">
-                  Confirme sua senha
+                  Confirm your password
                 </label>
                 <div className="relative">
                   <input
@@ -154,7 +154,7 @@ const Register = () => {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     className="w-full px-4 py-3 rounded-md input-dark transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-outliers-blue/50"
-                    placeholder="Confirme sua senha"
+                    placeholder="Confirm your password"
                   />
                 </div>
               </div>
@@ -167,11 +167,11 @@ const Register = () => {
                 {loading ? (
                   <>
                     <Loader2 size={18} className="animate-spin mr-2" />
-                    Processando...
+                    Processing...
                   </>
                 ) : (
                   <>
-                    Criar conta
+                    Create account
                     <CheckCircle size={18} className="ml-2" />
                   </>
                 )}
@@ -180,9 +180,9 @@ const Register = () => {
             
             <div className="mt-6 text-center">
               <p className="text-gray-400">
-                Já tem uma conta?{' '}
+                Already have an account?{' '}
                 <Link to="/login" className="text-outliers-blue hover:underline">
-                  Faça login
+                  Sign in
                 </Link>
               </p>
             </div>
